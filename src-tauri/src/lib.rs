@@ -3,6 +3,7 @@ pub mod commands;
 pub mod db;
 pub mod keychain;
 pub mod mock;
+pub mod update;
 
 use std::sync::Mutex;
 
@@ -17,7 +18,8 @@ pub fn run() {
         .plugin(tauri_plugin_sql::Builder::default().build())
         .plugin(tauri_plugin_store::Builder::default().build())
         .setup(|app| {
-            use tauri::Manager;
+            use tauri::menu::{Menu, MenuItemBuilder, Submenu, HELP_SUBMENU_ID};
+            use tauri::{Emitter, Manager};
 
             let db_path = app.path().app_data_dir().unwrap().join("kvault.db");
 
@@ -41,6 +43,40 @@ pub fn run() {
             }
 
             app.manage(AppDb(Mutex::new(conn)));
+
+            // Build the OS-default menu and append a "Check for updates…"
+            // item to the Help submenu so we keep all the standard OS
+            // shortcuts (Edit menu, Window menu, etc).
+            let menu = Menu::default(app.handle())?;
+            let check_updates = MenuItemBuilder::new("Check for updates…")
+                .id("check-for-updates")
+                .build(app)?;
+
+            if let Some(help_kind) = menu.get(HELP_SUBMENU_ID) {
+                if let Some(help_submenu) = help_kind.as_submenu() {
+                    help_submenu.append(&check_updates)?;
+                }
+            } else {
+                // Fallback: default menu had no Help submenu for this platform;
+                // tack on a minimal Help submenu so the item is still reachable.
+                let help = Submenu::with_id_and_items(
+                    app.handle(),
+                    HELP_SUBMENU_ID,
+                    "Help",
+                    true,
+                    &[&check_updates],
+                )?;
+                menu.append(&help)?;
+            }
+
+            app.set_menu(menu)?;
+
+            let check_updates_id = check_updates.id().clone();
+            app.on_menu_event(move |app_handle, event| {
+                if event.id() == &check_updates_id {
+                    let _ = app_handle.emit("kvault:check-for-updates", ());
+                }
+            });
 
             Ok(())
         })
@@ -74,6 +110,11 @@ pub fn run() {
             commands::filters::list_saved_filters,
             commands::filters::save_filter,
             commands::filters::delete_saved_filter,
+            // Update commands
+            commands::update::check_for_updates,
+            commands::update::dismiss_update_version,
+            commands::update::get_dismissed_version,
+            commands::update::open_release_page,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

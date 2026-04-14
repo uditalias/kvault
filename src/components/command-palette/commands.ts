@@ -216,5 +216,15 @@ export function getCommands(callbacks: {
     },
   });
 
+  commands.push({
+    id: 'check-for-updates',
+    label: 'Check for updates…',
+    category: 'Actions',
+    execute: () => {
+      window.dispatchEvent(new CustomEvent('kvault:check-for-updates-from-palette'));
+      callbacks.closeCommandPalette();
+    },
+  });
+
   return commands;
 }

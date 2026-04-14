@@ -3,6 +3,7 @@ pub mod filters;
 pub mod keys;
 pub mod namespaces;
 pub mod sync;
+pub mod update;
 pub mod workspaces;
 
 use crate::cloudflare::client::CloudflareClient;

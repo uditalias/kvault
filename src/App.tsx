@@ -9,16 +9,72 @@ import { useLayoutStore } from "./stores/layoutStore";
 import { useSettingsStore } from "./stores/settingsStore";
 import { useTabStore } from "./stores/tabStore";
 import { useKeyStore } from "./stores/keyStore";
+import { useUpdateStore } from "./stores/updateStore";
+import { useToastStore } from "./stores/toastStore";
 import ToastContainer from "./components/ui/ToastContainer";
+import UpdateDialog from "./components/update/UpdateDialog";
+import { onCheckForUpdatesRequested } from "./lib/tauri";
 
 function App() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const saveWorkspaceDialogOpen = useLayoutStore((s) => s.saveWorkspaceDialogOpen);
   const setSaveWorkspaceDialogOpen = useLayoutStore((s) => s.setSaveWorkspaceDialogOpen);
 
   useEffect(() => {
     useAccountStore.getState().loadAccounts();
     useSettingsStore.getState().initSettings();
+  }, []);
+
+  // Launch update check: init dismissed version, then non-forced check after 1.5s
+  useEffect(() => {
+    useUpdateStore.getState().init();
+    const timer = setTimeout(() => {
+      useUpdateStore
+        .getState()
+        .check(false)
+        .then((info) => {
+          if (!info || !info.isUpdateAvailable) return;
+          const dismissed = useUpdateStore.getState().dismissedVersion;
+          if (dismissed === info.latestVersion) return;
+          useToastStore.getState().addToast(
+            `Update available: v${info.latestVersion}`,
+            'info',
+            {
+              durationMs: 8000,
+              action: {
+                label: 'View',
+                onClick: () =>
+                  window.dispatchEvent(new CustomEvent('kvault:open-update-dialog')),
+              },
+            },
+          );
+        });
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Wire update triggers: Tauri menu, custom window events
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    onCheckForUpdatesRequested(() => {
+      setUpdateDialogOpen(true);
+      useUpdateStore.getState().check(true);
+    }).then((fn) => { unlisten = fn; });
+
+    const fromWindow = () => setUpdateDialogOpen(true);
+    const fromPalette = () => {
+      setUpdateDialogOpen(true);
+      useUpdateStore.getState().check(true);
+    };
+    window.addEventListener('kvault:open-update-dialog', fromWindow);
+    window.addEventListener('kvault:check-for-updates-from-palette', fromPalette);
+
+    return () => {
+      unlisten?.();
+      window.removeEventListener('kvault:open-update-dialog', fromWindow);
+      window.removeEventListener('kvault:check-for-updates-from-palette', fromPalette);
+    };
   }, []);
 
   useEffect(() => {
@@ -168,6 +224,10 @@ function App() {
       <SaveWorkspaceDialog
         open={saveWorkspaceDialogOpen}
         onClose={() => setSaveWorkspaceDialogOpen(false)}
+      />
+      <UpdateDialog
+        open={updateDialogOpen}
+        onClose={() => setUpdateDialogOpen(false)}
       />
       <ToastContainer />
     </>

@@ -27,6 +27,17 @@ export default function ToastContainer() {
         >
           <ToastIcon type={toast.type} />
           <span className="flex-1">{toast.message}</span>
+          {toast.action && (
+            <button
+              onClick={() => {
+                toast.action!.onClick();
+                removeToast(toast.id);
+              }}
+              className="flex-shrink-0 px-2 py-0.5 rounded text-[var(--accent)] hover:bg-[var(--bg-primary)] transition-colors font-medium"
+            >
+              {toast.action.label}
+            </button>
+          )}
           <button
             onClick={() => removeToast(toast.id)}
             className="flex-shrink-0 p-0.5 rounded hover:bg-[var(--bg-primary)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"

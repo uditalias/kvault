@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Spinner } from '../ui/Spinner';
 import { useTabStore } from '../../stores/tabStore';
 import { useAccountStore } from '../../stores/accountStore';
 import { useSyncStore } from '../../stores/syncStore';
+import { useUpdateStore } from '../../stores/updateStore';
+import UpdatePopover from '../update/UpdatePopover';
 
 function formatNumber(n: number): string {
   return n.toLocaleString('en-US');
@@ -44,11 +46,26 @@ export default function StatusBar() {
     ? syncStatus[activeTab.namespaceId] ?? null
     : null;
 
+  const updateStatus = useUpdateStore((s) => s.status);
+  const updateLatest = useUpdateStore((s) => s.latest);
+  const updateError = useUpdateStore((s) => s.error);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [showTransientOk, setShowTransientOk] = useState(false);
+  const anchorRef = useRef<HTMLSpanElement>(null);
+
   // Refresh relative time every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => setTick((t) => t + 1), 30_000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (updateStatus === 'up-to-date') {
+      setShowTransientOk(true);
+      const t = setTimeout(() => setShowTransientOk(false), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [updateStatus]);
 
   return (
     <div
@@ -95,10 +112,45 @@ export default function StatusBar() {
         )}
       </div>
 
-      {/* Right-aligned Cmd+K hint */}
-      <span className="ml-auto pl-2 text-[var(--text-tertiary)] opacity-60 shrink-0">
-        &#8984;K
-      </span>
+      {/* Right-aligned cluster: update segment + Cmd+K hint */}
+      <div className="flex items-center gap-2 ml-auto shrink-0">
+        {updateStatus === 'checking' && (
+          <span>
+            <span className="shimmer text-[var(--text-tertiary)]">Checking for updates…</span>
+          </span>
+        )}
+        {updateStatus === 'up-to-date' && showTransientOk && (
+          <span className="text-[var(--text-tertiary)]">Up to date</span>
+        )}
+        {updateLatest?.isUpdateAvailable && (updateStatus === 'available' || updateStatus === 'error') && (
+          <span ref={anchorRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setPopoverOpen((v) => !v)}
+              className="text-[var(--accent)] hover:underline cursor-pointer"
+              title={updateStatus === 'error' ? `Last check failed: ${updateError ?? 'unknown error'}` : undefined}
+            >
+              ● Update available: v{updateLatest.latestVersion}
+            </button>
+            <UpdatePopover
+              open={popoverOpen}
+              onClose={() => setPopoverOpen(false)}
+              anchorRef={anchorRef}
+            />
+          </span>
+        )}
+        {updateStatus === 'error' && !updateLatest?.isUpdateAvailable && (
+          <span
+            className="text-[var(--text-tertiary)] cursor-pointer"
+            title={updateError ?? ''}
+            onClick={() => useUpdateStore.getState().check(true)}
+          >
+            Update check failed
+          </span>
+        )}
+
+        <span className="text-[var(--text-tertiary)] opacity-60">&#8984;K</span>
+      </div>
     </div>
   );
 }

@@ -197,3 +197,38 @@ export const onSyncComplete = (callback: (payload: SyncCompleteEvent) => void) =
 
 export const onSyncError = (callback: (payload: SyncErrorEvent) => void) =>
   listen<SyncErrorEvent>('sync-error', (event) => callback(event.payload));
+
+// === Update event listener ===
+export const onCheckForUpdatesRequested = (callback: () => void) =>
+  listen<void>('kvault:check-for-updates', () => callback());
+
+// === Update types ===
+
+export interface UpdateInfo {
+  currentVersion: string;
+  latestVersion: string;
+  isUpdateAvailable: boolean;
+  notes: string;
+  releaseUrl: string;
+  checkedAt: string;
+  fromCache: boolean;
+}
+
+export interface UpdateErrorPayload {
+  kind: 'Network' | 'RateLimited' | 'NotFound' | 'Parse' | 'Store';
+  message?: string;
+}
+
+// === Update commands ===
+
+export const checkForUpdates = (force = false) =>
+  invoke<UpdateInfo>('check_for_updates', { force });
+
+export const dismissUpdateVersion = (version: string) =>
+  invoke<void>('dismiss_update_version', { version });
+
+export const getDismissedVersion = () =>
+  invoke<string | null>('get_dismissed_version');
+
+export const openReleasePage = (url: string) =>
+  invoke<void>('open_release_page', { url });

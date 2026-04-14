@@ -32,6 +32,8 @@ thiserror = "1"
 keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
 percent-encoding = "2"
 regex = "1"
+semver = "1"
+async-trait = "0.1"
 
 [dev-dependencies]
 mockito = "1"
