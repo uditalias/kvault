@@ -99,6 +99,7 @@ pub fn upsert_keys(
 }
 
 /// Get keys for a namespace with optional filter and search options.
+#[allow(clippy::too_many_arguments)]
 pub fn get_keys(
     conn: &Connection,
     namespace_id: &str,

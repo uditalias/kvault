@@ -24,6 +24,7 @@ pub struct BulkDeleteResult {
 }
 
 #[tauri::command]
+#[allow(clippy::too_many_arguments)]
 pub async fn get_cached_keys(
     db: State<'_, AppDb>,
     namespace_id: String,
