@@ -17,13 +17,9 @@
   <a href="#"><img src="https://img.shields.io/badge/license-MIT-purple?style=flat-square" alt="License" /></a>
 </p>
 
-<br />
-
 <p align="center">
   <img src="public/screenshots/global-search.png" alt="KVault — global search across every namespace with results grouped by namespace" width="900" />
 </p>
-
-<br />
 
 ## Why KVault?
 
