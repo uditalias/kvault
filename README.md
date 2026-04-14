@@ -211,11 +211,14 @@ Grab the latest build for your platform from the [**Releases**](https://github.c
 | macOS (Apple Silicon) | `KVault_<version>_aarch64.dmg` | Apple Silicon |
 | macOS (Intel) | `KVault_<version>_x64.dmg` | Intel-based Macs |
 | Windows | `KVault_<version>_x64-setup.exe` / `.msi` | Windows 10/11, 64-bit |
-| Linux | `kvault_<version>_amd64.AppImage` / `.deb` | x86_64 |
+| Linux (x86_64) | `KVault_<version>_amd64.AppImage` / `.deb` | x86_64 |
+| Linux (ARM64) | `KVault_<version>_arm64.AppImage` / `.deb` | aarch64 |
 
 > **macOS Gatekeeper:** the app isn't notarized yet. On first launch, right-click the app → **Open** (or run `xattr -dr com.apple.quarantine /Applications/KVault.app`).
 >
 > **Windows SmartScreen:** click **More info → Run anyway** — the binary is unsigned.
+>
+> **Linux compatibility:** KVault depends on `libwebkit2gtk-4.1-0` (GTK3). This is available on Ubuntu 22.04–24.04 (and equivalent Debian/Fedora). **Ubuntu 25.10+** dropped this package — users on those versions currently need to run Ubuntu 24.04 LTS in a VM/container, or wait for the upstream Tauri GTK4 migration.
 
 Prefer a package manager or want to build it yourself? See [Build from Source](#build-from-source) below.
 
