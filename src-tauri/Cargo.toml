@@ -1,6 +1,6 @@
 [package]
 name = "kvault"
-version = "0.0.3"
+version = "0.0.4"
 description = "A desktop client for browsing and managing Cloudflare Workers KV data"
 authors = ["Udi Talias"]
 edition = "2021"

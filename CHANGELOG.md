@@ -1,3 +1,8 @@
+## 0.0.4 (2026-04-14)
+
+- docs: update README and add index.html for project documentation (92bb126)
+- docs: enhance README navigation with additional links (d160b5e)
+
 ## 0.0.3 (2026-04-14)
 
 - ci: build ARM64 Linux bundles in release workflow (#1) (96505b6)
