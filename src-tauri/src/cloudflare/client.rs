@@ -395,7 +395,7 @@ mod tests {
     async fn test_verify_token_valid() {
         let mut server = mockito::Server::new_async().await;
         let mock = server
-            .mock("GET", "/user/tokens/verify")
+            .mock("GET", "/accounts/test-account/tokens/verify")
             .match_header("Authorization", "Bearer test-token")
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -418,7 +418,7 @@ mod tests {
     async fn test_verify_token_invalid() {
         let mut server = mockito::Server::new_async().await;
         let mock = server
-            .mock("GET", "/user/tokens/verify")
+            .mock("GET", "/accounts/test-account/tokens/verify")
             .with_status(401)
             .with_header("content-type", "application/json")
             .with_body(error_response(1000, "Invalid API Token"))
@@ -731,7 +731,7 @@ mod tests {
     async fn test_error_401_invalid_token() {
         let mut server = mockito::Server::new_async().await;
         let mock = server
-            .mock("GET", "/user/tokens/verify")
+            .mock("GET", "/accounts/test-account/tokens/verify")
             .with_status(401)
             .with_header("content-type", "application/json")
             .with_body(error_response(1000, "Invalid API Token"))
@@ -749,7 +749,7 @@ mod tests {
     async fn test_error_429_rate_limited() {
         let mut server = mockito::Server::new_async().await;
         let mock = server
-            .mock("GET", "/user/tokens/verify")
+            .mock("GET", "/accounts/test-account/tokens/verify")
             .with_status(429)
             .with_header("content-type", "application/json")
             .with_body(error_response(1015, "Rate limited"))
