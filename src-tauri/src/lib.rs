@@ -2,6 +2,7 @@ pub mod cloudflare;
 pub mod commands;
 pub mod db;
 pub mod keychain;
+pub mod mock;
 
 use std::sync::Mutex;
 
@@ -29,6 +30,15 @@ pub fn run() {
                 .expect("Failed to open database");
             db::migrations::run_migrations(&conn)
                 .expect("Failed to run database migrations");
+
+            // Dev-only: seed a mock account with realistic data so screenshots
+            // and local exploration don't need a real Cloudflare token.
+            #[cfg(debug_assertions)]
+            {
+                if let Err(e) = mock::seed(&conn) {
+                    eprintln!("mock seed failed: {e}");
+                }
+            }
 
             app.manage(AppDb(Mutex::new(conn)));
 

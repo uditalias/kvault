@@ -60,6 +60,10 @@ pub async fn update_account(
 
 #[tauri::command]
 pub async fn remove_account(db: State<'_, AppDb>, id: String) -> Result<(), String> {
+    if crate::mock::is_mock_account(&id) {
+        return Err("The mock account is managed by dev mode and can't be removed.".into());
+    }
+
     // Delete token from keychain first (ignore NotFound errors)
     keychain::delete_token(&id).map_err(|e| e.to_string())?;
 

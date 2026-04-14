@@ -50,6 +50,24 @@ pub async fn start_sync(
     account_id: String,
     namespace_id: String,
 ) -> Result<(), String> {
+    if crate::mock::is_mock_account(&account_id) {
+        // Mock data is seeded at startup; a "sync" is just an instant success
+        // so the UI shows the expected idle state after a re-sync.
+        let total_keys = {
+            let conn = db.0.lock().map_err(|e| e.to_string())?;
+            keys::get_key_count(&conn, &namespace_id).map_err(|e| e.to_string())?
+        };
+        set_sync_status(&db, &namespace_id, "idle")?;
+        let _ = app.emit(
+            "sync-complete",
+            SyncCompletePayload {
+                namespace_id: namespace_id.clone(),
+                total_keys,
+            },
+        );
+        return Ok(());
+    }
+
     // Set status to syncing
     set_sync_status(&db, &namespace_id, "syncing")?;
 

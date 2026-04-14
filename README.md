@@ -20,7 +20,7 @@
 <br />
 
 <p align="center">
-  <img src="assets/screenshot.png" alt="KVault Screenshot" width="800" />
+  <img src="public/screenshots/key-list-ttl.png" alt="KVault — virtualized key list with TTL column" width="900" />
 </p>
 
 <br />
@@ -88,9 +88,17 @@ KVault is purpose-built for **KV power users**. It brings the speed and convenie
 
 Connect multiple Cloudflare accounts and browse all your namespaces in a unified tree view. No more logging in and out or switching between browser tabs. Each account shows its connection status and syncs independently.
 
+<p align="center">
+  <img src="public/screenshots/welcome.png" alt="Unified accounts tree in the sidebar with the welcome screen showing keyboard shortcuts" width="900" />
+</p>
+
 ### Global Search
 
 Search across **every namespace in every account** in one shot. Toggle case sensitivity, whole-word matching, or full regex — results are grouped by namespace with match counts so you can find that key in seconds, not minutes.
+
+<p align="center">
+  <img src="public/screenshots/global-search.png" alt="Searching the substring '100101' across four namespaces — results are grouped per namespace with match counts" width="900" />
+</p>
 
 ### Advanced Filtering
 
@@ -99,6 +107,16 @@ Each namespace gets its own filter bar with real-time results. Save your frequen
 ### Monaco Editor
 
 View and edit values in a full-featured code editor — the same one that powers VS Code. Auto-detects JSON and formats it for readability. Toggle between formatted and raw views. Save with `Cmd+S`, track dirty state, and never lose an edit.
+
+<p align="center">
+  <img src="public/screenshots/monaco-editor.png" alt="A JSON session value opened in the Monaco editor with syntax highlighting and the Formatted/Raw toggle" width="900" />
+</p>
+
+Hit `Cmd+S` to save and the status bar confirms the write:
+
+<p align="center">
+  <img src="public/screenshots/editing-value-saved.png" alt="Editing a feature flag value and saving with Cmd+S — the 'Saved' indicator appears above the editor" width="900" />
+</p>
 
 ### Hex Viewer & Binary Support
 
@@ -114,7 +132,11 @@ Select multiple keys with checkboxes or range-select, then delete or export in b
 
 ### TTL Visibility
 
-Every key displays its time-to-expiration right in the list — `5d`, `2h`, `30m`, or `expired`. Set TTL when creating or updating keys. No more guessing which keys are about to vanish.
+Every key displays its time-to-expiration right in the list — `5d`, `2h`, `30m`, or `expired`. Set TTL when creating or updating keys. No more guessing which keys are about to vanish. When creating a new key, the dialog picks up JSON or plain text automatically and lets you set a TTL in seconds.
+
+<p align="center">
+  <img src="public/screenshots/create-key-dialog.png" alt="The Create Key dialog with Key Name, Content Type (JSON/Text), Value editor, and an optional TTL field" width="900" />
+</p>
 
 ### Tabs & Navigation
 
@@ -157,9 +179,30 @@ API tokens are stored in your OS keychain (macOS Keychain, Windows Credential Ma
 
 ## Themes
 
-KVault ships with **9 built-in themes** — 5 dark and 4 light — each applied consistently across the UI and the Monaco editor.
+KVault ships with **9 built-in themes** — 4 dark and 5 light — each applied consistently across the UI *and* the Monaco editor. Switch from the command palette or Settings; the same key looks right at home in every palette.
 
-`Catppuccin Mocha` `Catppuccin Latte` `One Dark Pro` `Dracula` `Nord` `GitHub Light` `Solarized Light` `One Light` `Quiet Light`
+<table>
+<tr>
+<td width="50%" align="center"><img src="public/screenshots/theme-catppuccin-mocha.png" alt="Catppuccin Mocha" /><br /><sub><b>Catppuccin Mocha</b></sub></td>
+<td width="50%" align="center"><img src="public/screenshots/theme-one-dark-pro.png" alt="One Dark Pro" /><br /><sub><b>One Dark Pro</b></sub></td>
+</tr>
+<tr>
+<td width="50%" align="center"><img src="public/screenshots/theme-dracula.png" alt="Dracula" /><br /><sub><b>Dracula</b></sub></td>
+<td width="50%" align="center"><img src="public/screenshots/theme-nord.png" alt="Nord" /><br /><sub><b>Nord</b></sub></td>
+</tr>
+<tr>
+<td width="50%" align="center"><img src="public/screenshots/theme-github-light.png" alt="GitHub Light" /><br /><sub><b>GitHub Light</b></sub></td>
+<td width="50%" align="center"><img src="public/screenshots/theme-catppuccin-latte.png" alt="Catppuccin Latte" /><br /><sub><b>Catppuccin Latte</b></sub></td>
+</tr>
+<tr>
+<td width="50%" align="center"><img src="public/screenshots/theme-solarized-light.png" alt="Solarized Light" /><br /><sub><b>Solarized Light</b></sub></td>
+<td width="50%" align="center"><img src="public/screenshots/theme-one-light.png" alt="One Light" /><br /><sub><b>One Light</b></sub></td>
+</tr>
+<tr>
+<td width="50%" align="center"><img src="public/screenshots/theme-quiet-light.png" alt="Quiet Light" /><br /><sub><b>Quiet Light</b></sub></td>
+<td width="50%"></td>
+</tr>
+</table>
 
 <br />
 

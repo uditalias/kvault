@@ -25,6 +25,17 @@ pub async fn refresh_namespaces(
     db: State<'_, AppDb>,
     account_id: String,
 ) -> Result<NamespaceRefreshResult, String> {
+    if crate::mock::is_mock_account(&account_id) {
+        let conn = db.0.lock().map_err(|e| e.to_string())?;
+        let current = accounts::get_namespaces_for_account(&conn, &account_id)
+            .map_err(|e| e.to_string())?;
+        return Ok(NamespaceRefreshResult {
+            current,
+            added: vec![],
+            removed: vec![],
+        });
+    }
+
     let client = super::create_cf_client(&db, &account_id)?;
 
     // Fetch current namespaces from Cloudflare

@@ -92,6 +92,13 @@ pub async fn get_value(
     namespace_id: String,
     key_name: String,
 ) -> Result<ValueResult, String> {
+    if crate::mock::is_mock_account(&account_id) {
+        let data = crate::mock::get(&namespace_id, &key_name).unwrap_or_default();
+        let size = data.len();
+        let is_json = serde_json::from_slice::<serde_json::Value>(&data).is_ok();
+        return Ok(ValueResult { data, is_json, size });
+    }
+
     let client = super::create_cf_client(&db, &account_id)?;
     let data = client
         .get_value(&namespace_id, &key_name)
@@ -117,6 +124,21 @@ pub async fn put_value(
     value: Vec<u8>,
     ttl: Option<i64>,
 ) -> Result<(), String> {
+    if crate::mock::is_mock_account(&account_id) {
+        crate::mock::put(&namespace_id, &key_name, value);
+        let expiration = ttl.map(|t| {
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_secs() as i64
+                + t
+        });
+        let conn = db.0.lock().map_err(|e| e.to_string())?;
+        keys::insert_key(&conn, &namespace_id, &key_name, expiration)
+            .map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+
     let client = super::create_cf_client(&db, &account_id)?;
     client
         .put_value(&namespace_id, &key_name, &value, ttl)
@@ -131,6 +153,14 @@ pub async fn delete_key(
     namespace_id: String,
     key_name: String,
 ) -> Result<(), String> {
+    if crate::mock::is_mock_account(&account_id) {
+        crate::mock::delete(&namespace_id, &key_name);
+        let conn = db.0.lock().map_err(|e| e.to_string())?;
+        keys::delete_cached_keys(&conn, &namespace_id, &[key_name])
+            .map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+
     let client = super::create_cf_client(&db, &account_id)?;
     client
         .delete_key(&namespace_id, &key_name)
@@ -151,6 +181,17 @@ pub async fn bulk_delete_keys(
     namespace_id: String,
     key_names: Vec<String>,
 ) -> Result<BulkDeleteResult, String> {
+    if crate::mock::is_mock_account(&account_id) {
+        let total = key_names.len();
+        for k in &key_names {
+            crate::mock::delete(&namespace_id, k);
+        }
+        let conn = db.0.lock().map_err(|e| e.to_string())?;
+        keys::delete_cached_keys(&conn, &namespace_id, &key_names)
+            .map_err(|e| e.to_string())?;
+        return Ok(BulkDeleteResult { deleted: total, failed: vec![] });
+    }
+
     let client = super::create_cf_client(&db, &account_id)?;
     let total = key_names.len();
 
@@ -178,23 +219,32 @@ pub async fn create_key(
     value: Vec<u8>,
     ttl: Option<i64>,
 ) -> Result<(), String> {
+    let expiration_from_ttl = || {
+        ttl.map(|t| {
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_secs() as i64
+                + t
+        })
+    };
+
+    if crate::mock::is_mock_account(&account_id) {
+        crate::mock::put(&namespace_id, &key_name, value);
+        let conn = db.0.lock().map_err(|e| e.to_string())?;
+        keys::insert_key(&conn, &namespace_id, &key_name, expiration_from_ttl())
+            .map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+
     let client = super::create_cf_client(&db, &account_id)?;
     client
         .put_value(&namespace_id, &key_name, &value, ttl)
         .await
         .map_err(|e| e.to_string())?;
 
-    // Insert into local cache
-    // If TTL is provided, compute expiration as current time + TTL seconds
-    let expiration = ttl.map(|t| {
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_secs() as i64
-            + t
-    });
     let conn = db.0.lock().map_err(|e| e.to_string())?;
-    keys::insert_key(&conn, &namespace_id, &key_name, expiration)
+    keys::insert_key(&conn, &namespace_id, &key_name, expiration_from_ttl())
         .map_err(|e| e.to_string())?;
     Ok(())
 }
