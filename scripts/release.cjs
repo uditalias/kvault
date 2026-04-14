@@ -42,9 +42,9 @@ function writePkgVersion(v) {
 function writeCargoVersion(v) {
   const toml = readFileSync(cargoPath, "utf-8");
   // Only replace the first `version = "..."` — it's the [package] one in this file.
-  const updated = toml.replace(/^version\s*=\s*"[^"]+"/m, `version = "${v}"`);
-  if (updated === toml) die("Could not find version field in src-tauri/Cargo.toml");
-  writeFileSync(cargoPath, updated);
+  const re = /^version\s*=\s*"[^"]+"/m;
+  if (!re.test(toml)) die("Could not find version field in src-tauri/Cargo.toml");
+  writeFileSync(cargoPath, toml.replace(re, `version = "${v}"`));
 }
 
 function writeTauriConfVersion(v) {
@@ -152,6 +152,10 @@ async function main() {
   }
   rl.close();
 
+  if (nextVersion === currentVersion) {
+    die(`Next version (${nextVersion}) is the same as current. Pick a different version.`);
+  }
+
   console.log(`\nReleasing ${currentVersion} → ${nextVersion}\n`);
 
   // 1. Tests
@@ -192,7 +196,9 @@ async function main() {
   updateChangelog(finalEntry);
   console.log("✓ CHANGELOG.md updated");
 
-  // 4. Commit + tag. Cargo.lock also bumps because Cargo.toml changed — include it.
+  // 4. Commit the bump. Cargo.lock also bumps because Cargo.toml changed.
+  // No tag yet — the Release workflow creates the tag only after every
+  // platform build succeeds, so failed releases don't leave orphan tags.
   try {
     run("cargo check --manifest-path src-tauri/Cargo.toml");
   } catch {
@@ -200,11 +206,37 @@ async function main() {
   }
   run("git add package.json src-tauri/Cargo.toml src-tauri/Cargo.lock src-tauri/tauri.conf.json CHANGELOG.md");
   run(`git commit -m "release: v${nextVersion}"`);
-  run(`git tag v${nextVersion}`);
 
-  console.log(`\n✓ Tagged v${nextVersion}`);
-  console.log(`\nPush to trigger the Release workflow:\n`);
-  console.log(`  git push && git push --tags\n`);
+  // 5. Push and trigger the Release workflow.
+  // The gh CLI is required here. If it's missing, the user can push + trigger manually.
+  console.log("\n── Pushing to origin ──");
+  try {
+    run("git push origin HEAD");
+  } catch {
+    die("git push failed. Fix the push, then trigger the workflow manually with:\n  gh workflow run release.yml");
+  }
+
+  console.log("\n── Triggering Release workflow ──");
+  try {
+    run("gh workflow run release.yml");
+  } catch {
+    console.log(
+      "\n⚠ Could not trigger the workflow automatically (is the GitHub CLI installed and authenticated?).",
+    );
+    console.log("Trigger it manually:");
+    console.log("  gh workflow run release.yml");
+    console.log("  # or: GitHub → Actions → Release → Run workflow\n");
+    return;
+  }
+
+  console.log(`\n✓ v${nextVersion} release pipeline started.`);
+  console.log("Watch progress:");
+  console.log("  gh run watch");
+  console.log("  # or: https://github.com/uditalias/kvault/actions\n");
+  console.log(
+    "If CI fails, push a fix commit (don't re-bump the version) and re-run:",
+  );
+  console.log("  gh workflow run release.yml\n");
 }
 
 main().catch((err) => { console.error(err); process.exit(1); });

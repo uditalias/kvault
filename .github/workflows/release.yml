@@ -1,17 +1,83 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  release:
+  # ── 1. Preflight: tests + clippy + type-check, read version, check tag is free.
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # need tags to check for conflicts
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libsecret-1-dev
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Read version from package.json
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Releasing v$VERSION"
+
+      - name: Verify tag does not already exist
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag $TAG already exists. Bump the version before re-running."
+            exit 1
+          fi
+
+      - name: Verify CHANGELOG has an entry for this version
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if ! grep -qE "^## ${VERSION}( |$)" CHANGELOG.md; then
+            echo "::error::No '## ${VERSION}' section found in CHANGELOG.md."
+            exit 1
+          fi
+
+      - name: Rust tests
+        working-directory: src-tauri
+        run: cargo test
+
+      - name: Clippy
+        working-directory: src-tauri
+        run: cargo clippy -- -D warnings
+
+      - name: Install frontend
+        run: npm ci
+
+      - name: Type-check + frontend build
+        run: npm run build
+
+  # ── 2. Build per-platform. fail-fast aborts the rest as soon as one fails.
+  build:
+    needs: preflight
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:
           - platform: macos-latest
@@ -52,19 +118,54 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Extract release notes from CHANGELOG.md
-        id: changelog
+      - name: Build Tauri app
+        run: npm run tauri -- build --target ${{ matrix.target }}
+
+      - name: Collect bundle paths
+        id: bundles
         shell: bash
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          # Grab the section for this version: from "## X.Y.Z" to the next "## " (exclusive)
+          BUNDLE_DIR="src-tauri/target/${{ matrix.target }}/release/bundle"
+          ls -la "$BUNDLE_DIR" || true
+          echo "dir=$BUNDLE_DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: kvault-${{ matrix.target }}
+          path: |
+            ${{ steps.bundles.outputs.dir }}/**/*.dmg
+            ${{ steps.bundles.outputs.dir }}/**/*.msi
+            ${{ steps.bundles.outputs.dir }}/**/*.exe
+            ${{ steps.bundles.outputs.dir }}/**/*.AppImage
+            ${{ steps.bundles.outputs.dir }}/**/*.deb
+          if-no-files-found: error
+
+  # ── 3. Publish: only reached when every matrix job succeeded.
+  publish:
+    needs: [preflight, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v5
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Extract release notes from CHANGELOG.md
+        id: notes
+        shell: bash
+        run: |
+          VERSION="${{ needs.preflight.outputs.version }}"
           NOTES=$(awk -v ver="## ${VERSION}" '
             $0 ~ "^"ver"( |$)" {flag=1; next}
             flag && /^## / {exit}
             flag {print}
           ' CHANGELOG.md)
           if [ -z "$NOTES" ]; then
-            NOTES="See [CHANGELOG.md](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/CHANGELOG.md)."
+            NOTES="Release v${VERSION}."
           fi
           {
             echo "notes<<EOF_NOTES"
@@ -72,14 +173,13 @@ jobs:
             echo "EOF_NOTES"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Build and release
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create tag and GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: KVault ${{ github.ref_name }}
-          releaseBody: ${{ steps.changelog.outputs.notes }}
-          releaseDraft: false
+          tag_name: v${{ needs.preflight.outputs.version }}
+          name: KVault v${{ needs.preflight.outputs.version }}
+          body: ${{ steps.notes.outputs.notes }}
+          files: artifacts/**/*
+          draft: false
           prerelease: false
-          args: --target ${{ matrix.target }}
+          fail_on_unmatched_files: true

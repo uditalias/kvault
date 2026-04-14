@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="#"><img src="https://img.shields.io/badge/version-0.1.0-blue?style=flat-square" alt="Version" /></a>
+  <a href="#"><img src="https://img.shields.io/github/v/release/uditalias/kvault?style=flat-square&label=version&color=blue" alt="Version" /></a>
   <a href="#"><img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-brightgreen?style=flat-square" alt="Platform" /></a>
   <a href="#"><img src="https://img.shields.io/badge/built%20with-Tauri%202-orange?style=flat-square" alt="Built with Tauri" /></a>
   <a href="#"><img src="https://img.shields.io/badge/license-MIT-purple?style=flat-square" alt="License" /></a>

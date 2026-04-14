@@ -135,11 +135,17 @@ Use clear, descriptive commit messages. We loosely follow [Conventional Commits]
 Releases are cut locally with `npm run release` (see [scripts/release.cjs](scripts/release.cjs)):
 
 1. Bumps version in `package.json`, `src-tauri/Cargo.toml`, and `src-tauri/tauri.conf.json`
-2. Runs tests + type-check
+2. Runs tests + type-check locally
 3. Opens your editor on an auto-generated `CHANGELOG.md` entry
-4. Commits and tags `vX.Y.Z`
+4. Commits `release: vX.Y.Z` (no tag), pushes, and triggers `.github/workflows/release.yml` via `gh workflow run`
 
-Pushing the tag triggers `.github/workflows/release.yml`, which builds the Tauri app for all four platforms and uploads the artifacts to a GitHub Release.
+The workflow (`workflow_dispatch` only — never on every commit) runs tests + clippy + type-check once more, builds the Tauri app on all 4 platforms with `fail-fast: true`, and **only then** creates the `vX.Y.Z` tag and publishes a GitHub Release with the CHANGELOG notes + artifacts. If any step fails, no tag or Release is created — push a fix commit (without bumping the version) and re-run:
+
+```bash
+gh workflow run release.yml
+```
+
+Requires the [GitHub CLI](https://cli.github.com/) (`gh`) to be installed and authenticated.
 
 ## Questions?
 
