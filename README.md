@@ -223,8 +223,8 @@ Grab the latest build for your platform from the [**Releases**](https://github.c
 | macOS (Apple Silicon) | `KVault_<version>_aarch64.dmg` | Apple Silicon |
 | macOS (Intel) | `KVault_<version>_x64.dmg` | Intel-based Macs |
 | Windows | `KVault_<version>_x64-setup.exe` / `.msi` | Windows 10/11, 64-bit |
-| Linux (x86_64) | `KVault_<version>_amd64.AppImage` / `.deb` | x86_64 |
-| Linux (ARM64) | `KVault_<version>_arm64.AppImage` / `.deb` | aarch64 |
+| Linux (x86_64) | `KVault_<version>_amd64.AppImage` / `_amd64.deb` | x86_64 |
+| Linux (ARM64) | `KVault_<version>_aarch64.AppImage` / `_arm64.deb` | aarch64 |
 
 > **macOS Gatekeeper:** the app isn't notarized yet. On first launch, right-click the app → **Open** (or run `xattr -dr com.apple.quarantine /Applications/KVault.app`).
 >

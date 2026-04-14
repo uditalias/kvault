@@ -42,18 +42,6 @@ export function getCommands(callbacks: {
   const commands: Command[] = [];
 
   // --- Accounts ---
-  for (const account of accounts) {
-    commands.push({
-      id: `switch-account-${account.id}`,
-      label: `Switch to ${account.name}`,
-      category: 'Accounts',
-      execute: () => {
-        useAccountStore.getState().setActiveAccount(account.id);
-        callbacks.closeCommandPalette();
-      },
-    });
-  }
-
   commands.push({
     id: 'add-account',
     label: 'Add Account',

@@ -4,7 +4,6 @@ import type { Account, Namespace, NamespaceRefreshResult } from '../lib/tauri';
 
 interface AccountState {
   accounts: Account[];
-  activeAccountId: string | null;
   namespacesMap: Record<string, Namespace[]>; // accountId -> namespaces
   connectionStatus: Record<string, 'connected' | 'error' | 'loading'>; // accountId -> status
 
@@ -13,14 +12,12 @@ interface AccountState {
   addAccount: (name: string, cfAccountId: string, apiToken: string) => Promise<Account>;
   removeAccount: (id: string) => Promise<void>;
   updateAccount: (id: string, name: string, cfAccountId: string, apiToken?: string) => Promise<void>;
-  setActiveAccount: (id: string) => void;
   loadNamespaces: (accountId: string) => Promise<void>;
   refreshNamespaces: (accountId: string) => Promise<NamespaceRefreshResult>;
 }
 
 export const useAccountStore = create<AccountState>((set, get) => ({
   accounts: [],
-  activeAccountId: null,
   namespacesMap: {},
   connectionStatus: {},
 
@@ -66,7 +63,6 @@ export const useAccountStore = create<AccountState>((set, get) => ({
         accounts: state.accounts.filter((a) => a.id !== id),
         namespacesMap: restNamespaces,
         connectionStatus: restStatus,
-        activeAccountId: state.activeAccountId === id ? null : state.activeAccountId,
       };
     });
   },
@@ -81,10 +77,6 @@ export const useAccountStore = create<AccountState>((set, get) => ({
           : a,
       ),
     }));
-  },
-
-  setActiveAccount: (id) => {
-    set({ activeAccountId: id });
   },
 
   loadNamespaces: async (accountId) => {

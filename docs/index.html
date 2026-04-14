@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KVault — the desktop client for Cloudflare Workers KV</title>
+  <meta name="description" content="KVault is a fast, native desktop client for Cloudflare Workers KV. Browse every namespace, run cross-account search, edit with Monaco, and never touch the dashboard again." />
+
+  <meta property="og:title" content="KVault — the desktop client for Cloudflare Workers KV" />
+  <meta property="og:description" content="Navigate, search, and manage your KV data without the dashboard friction." />
+  <meta property="og:image" content="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/global-search.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://uditalias.github.io/kvault/" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/kvault.svg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:             #0a0a0b;
+      --bg-raised:      #101012;
+      --fg:             #ededee;
+      --fg-muted:       #8b8b92;
+      --fg-dim:         #55555a;
+      --border:         #1c1c20;
+      --border-strong:  #2a2a2f;
+      --accent:         #f38020;
+      --accent-hover:   #fb9142;
+      --accent-soft:    rgba(243, 128, 32, 0.08);
+      --accent-glow:    rgba(243, 128, 32, 0.30);
+      --accent-glow-2:  rgba(243, 128, 32, 0.45);
+
+      --sans:     'Geist', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+      --mono:     'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+      --page-max:  1240px;
+      --ease:      cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--sans);
+      font-weight: 400;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      scroll-behavior: smooth;
+    }
+
+    ::selection { background: var(--accent); color: var(--bg); }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    /* Grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.035;
+      mix-blend-mode: overlay;
+      z-index: 999;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    }
+
+    /* =========================
+       NAV
+       ========================= */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      background: rgba(10, 10, 11, 0.72);
+      border-bottom: 1px solid transparent;
+      transition: border-color 220ms var(--ease);
+    }
+    nav.scrolled { border-bottom-color: var(--border); }
+
+    nav .inner {
+      max-width: var(--page-max);
+      margin: 0 auto;
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+    }
+
+    .wordmark {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--sans);
+      font-weight: 500;
+      font-size: 16px;
+      letter-spacing: -0.01em;
+      color: var(--fg);
+    }
+    .wordmark img {
+      width: 28px;
+      height: 28px;
+      display: block;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+    nav ul a {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--fg-muted);
+      letter-spacing: 0.01em;
+      transition: color 160ms var(--ease);
+    }
+    nav ul a:hover { color: var(--fg); }
+
+    nav .gh {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--fg);
+      padding: 8px 14px;
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      transition: border-color 180ms var(--ease), background 180ms var(--ease);
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+    nav .gh:hover { border-color: var(--fg-muted); background: var(--bg-raised); }
+    nav .gh .arrow { font-size: 10px; opacity: 0.6; }
+
+    /* =========================
+       HERO
+       ========================= */
+    .hero {
+      max-width: var(--page-max);
+      margin: 0 auto;
+      padding: 140px 32px 80px;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero .kicker {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--fg-muted);
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      margin-bottom: 40px;
+      background: var(--bg-raised);
+    }
+    .hero .kicker .dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin-right: 10px;
+      transform: translateY(-1px);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(243, 128, 32, 0.5); }
+      50%      { opacity: 0.55; box-shadow: 0 0 0 6px rgba(243, 128, 32, 0); }
+    }
+
+    h1.hero-title {
+      font-family: var(--sans);
+      font-weight: 300;
+      font-size: clamp(2.8rem, 6vw, 5.2rem);
+      line-height: 1.02;
+      letter-spacing: -0.035em;
+      color: var(--fg);
+      margin-bottom: 28px;
+    }
+    h1.hero-title .accent {
+      font-weight: 500;
+      color: var(--accent);
+    }
+    h1.hero-title .subj {
+      font-weight: 500;
+      color: var(--fg);
+    }
+
+    .hero .lede {
+      max-width: 580px;
+      margin: 0 auto 44px;
+      font-size: 18px;
+      line-height: 1.55;
+      color: var(--fg-muted);
+    }
+
+    .hero .ctas {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 32px;
+    }
+
+    .btn {
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 12px 22px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform 180ms var(--ease), background 180ms var(--ease), border-color 180ms var(--ease), box-shadow 180ms var(--ease);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      background: var(--accent-hover);
+      box-shadow: 0 8px 28px var(--accent-glow-2);
+    }
+
+    /* Shimmer — animated conic border + diagonal light sweep */
+    @property --border-angle {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
+    .btn-shimmer {
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .btn-shimmer::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 2px;
+      background: conic-gradient(
+        from var(--border-angle),
+        transparent 0deg,
+        transparent 240deg,
+        rgba(255, 230, 188, 0.8) 270deg,
+        rgba(255, 255, 255, 0.55) 300deg,
+        transparent 360deg
+      );
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+              mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+              mask-composite: exclude;
+      pointer-events: none;
+      animation: border-shimmer 4s linear infinite;
+      z-index: 2;
+    }
+    .btn-shimmer::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+      animation: shimmer 5s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .btn-shimmer > * { position: relative; z-index: 3; }
+
+    @keyframes border-shimmer {
+      0%   { --border-angle: 0deg; }
+      100% { --border-angle: 360deg; }
+    }
+    @keyframes shimmer {
+      0%   { left: -100%; }
+      30%  { left: 150%; }
+      100% { left: 150%; }
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--fg);
+      border-color: var(--border-strong);
+    }
+    .btn-ghost:hover { border-color: var(--fg-muted); background: var(--bg-raised); }
+
+    .hero .platforms {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--fg-dim);
+      letter-spacing: 0.08em;
+    }
+    .hero .platforms span { color: var(--fg-muted); margin: 0 10px; }
+
+    /* =========================
+       PRODUCT HERO SHOT
+       ========================= */
+    .product {
+      max-width: var(--page-max);
+      margin: 0 auto;
+      padding: 60px 32px 160px;
+      position: relative;
+    }
+    .product::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 20%;
+      transform: translateX(-50%);
+      width: 70%;
+      height: 60%;
+      background: radial-gradient(ellipse at center, rgba(243, 128, 32, 0.18), transparent 65%);
+      filter: blur(60px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .product .frame {
+      position: relative;
+      z-index: 1;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.04) inset,
+        0 30px 60px -20px rgba(0, 0, 0, 0.7),
+        0 80px 140px -40px rgba(0, 0, 0, 0.5);
+      background: var(--bg-raised);
+    }
+    .product .frame img { width: 100%; display: block; }
+
+    .product .caption {
+      margin-top: 20px;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--fg-dim);
+      letter-spacing: 0.04em;
+    }
+    .product .caption span { color: var(--fg-muted); }
+
+    /* =========================
+       SECTION HEADER
+       ========================= */
+    .section-header {
+      max-width: 760px;
+      margin: 0 auto 64px;
+      padding: 0 32px;
+      text-align: center;
+    }
+    .section-header .eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+      margin-bottom: 18px;
+    }
+    .section-header h2 {
+      font-family: var(--sans);
+      font-weight: 400;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.025em;
+      line-height: 1.1;
+      color: var(--fg);
+    }
+    .section-header h2 .accent {
+      font-weight: 500;
+      color: var(--accent);
+    }
+    .section-header p {
+      margin-top: 18px;
+      font-size: 17px;
+      color: var(--fg-muted);
+      line-height: 1.55;
+    }
+
+    /* =========================
+       FEATURES
+       ========================= */
+    .features {
+      max-width: var(--page-max);
+      margin: 0 auto;
+      padding: 0 32px 160px;
+    }
+    .features .grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+    }
+    .feature {
+      border: 1px solid var(--border);
+      background: var(--bg-raised);
+      border-radius: 12px;
+      padding: 28px 26px;
+      transition: border-color 220ms var(--ease), background 220ms var(--ease), transform 220ms var(--ease);
+      position: relative;
+      overflow: hidden;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .feature:hover {
+      border-color: var(--border-strong);
+      transform: translateY(-2px);
+    }
+    .feature .num {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--fg-dim);
+      letter-spacing: 0.06em;
+    }
+    .feature h3 {
+      font-family: var(--sans);
+      font-weight: 500;
+      font-size: 20px;
+      letter-spacing: -0.015em;
+      color: var(--fg);
+      line-height: 1.25;
+    }
+    .feature h3 .accent {
+      color: var(--accent);
+    }
+    .feature p {
+      font-size: 14.5px;
+      color: var(--fg-muted);
+      line-height: 1.55;
+      margin-top: auto;
+    }
+
+    /* Bento-ish sizing */
+    .feature.w3 { grid-column: span 3; }
+    .feature.w2 { grid-column: span 2; }
+    .feature.w4 { grid-column: span 4; }
+
+    /* =========================
+       THEMES STRIP
+       ========================= */
+    .themes {
+      max-width: var(--page-max);
+      margin: 0 auto;
+      padding: 0 32px 160px;
+    }
+    .themes-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .theme-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--bg-raised);
+      transition: transform 260ms var(--ease), border-color 220ms var(--ease);
+    }
+    .theme-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--border-strong);
+    }
+    .theme-card img { width: 100%; aspect-ratio: 16/10; object-fit: cover; }
+    .theme-card .label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--fg-muted);
+      padding: 12px 14px;
+      letter-spacing: 0.04em;
+      border-top: 1px solid var(--border);
+    }
+
+    /* =========================
+       DOWNLOAD (terminal rows)
+       ========================= */
+    .download {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 32px 160px;
+    }
+
+    .download-cta {
+      text-align: center;
+    }
+    .btn-mega {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--sans);
+      font-size: 17px;
+      font-weight: 500;
+      padding: 20px 36px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      transition: transform 200ms var(--ease), background 200ms var(--ease), box-shadow 200ms var(--ease);
+      box-shadow: 0 12px 40px -12px rgba(243, 128, 32, 0.55);
+    }
+    .btn-mega:hover {
+      transform: translateY(-2px);
+      background: var(--accent-hover);
+      box-shadow: 0 18px 50px -10px rgba(243, 128, 32, 0.7);
+    }
+    .btn-mega .arrow {
+      font-size: 14px;
+      opacity: 0.85;
+    }
+
+    .platforms-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      max-width: 720px;
+      margin: 56px auto 0;
+      padding: 28px 0 0;
+      border-top: 1px solid var(--border);
+    }
+    .platform-col {
+      text-align: center;
+      font-family: var(--mono);
+    }
+    .platform-col .os {
+      font-size: 13px;
+      color: var(--fg);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      margin-bottom: 8px;
+    }
+    .platform-col .variants {
+      font-size: 11px;
+      color: var(--fg-muted);
+      line-height: 1.8;
+      letter-spacing: 0.04em;
+    }
+    .platform-col .icon {
+      width: 22px;
+      height: 22px;
+      margin: 0 auto 14px;
+      display: block;
+      color: var(--fg-muted);
+    }
+    .platform-col:hover .icon { color: var(--accent); }
+    .platform-col .icon svg { width: 100%; height: 100%; fill: currentColor; }
+
+    .download .foot {
+      margin-top: 40px;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--fg-dim);
+    }
+    .download .foot a { color: var(--fg-muted); border-bottom: 1px dotted var(--border-strong); }
+    .download .foot a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* =========================
+       FOOTER
+       ========================= */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 32px;
+      max-width: var(--page-max);
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--fg-dim);
+      letter-spacing: 0.04em;
+    }
+    footer a { color: var(--fg-muted); }
+    footer a:hover { color: var(--accent); }
+
+    /* =========================
+       HERO LOAD ANIMATION
+       ========================= */
+    .reveal { opacity: 0; transform: translateY(14px); }
+    .reveal.in {
+      opacity: 1; transform: translateY(0);
+      transition: opacity 700ms var(--ease), transform 700ms var(--ease);
+    }
+    .reveal.d1 { transition-delay: 80ms; }
+    .reveal.d2 { transition-delay: 180ms; }
+    .reveal.d3 { transition-delay: 300ms; }
+    .reveal.d4 { transition-delay: 440ms; }
+    .reveal.d5 { transition-delay: 580ms; }
+
+    /* =========================
+       RESPONSIVE
+       ========================= */
+    @media (max-width: 960px) {
+      .features .grid { grid-template-columns: repeat(2, 1fr); }
+      .feature.w2, .feature.w3, .feature.w4 { grid-column: span 2; }
+      .themes-grid { grid-template-columns: repeat(2, 1fr); }
+      nav ul { display: none; }
+    }
+    @media (max-width: 600px) {
+      .platforms-row { grid-template-columns: 1fr; gap: 24px; }
+    }
+    @media (max-width: 600px) {
+      .hero { padding: 100px 24px 60px; }
+      .product { padding: 40px 16px 100px; }
+      .features, .themes, .download { padding-left: 20px; padding-right: 20px; padding-bottom: 100px; }
+      h1.hero-title { font-size: clamp(2.2rem, 9vw, 3.4rem); }
+      footer { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+
+<body>
+  <nav id="nav">
+    <div class="inner">
+      <a href="#" class="wordmark">
+        <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/kvault.svg" alt="" />
+        KVault
+      </a>
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#themes">Themes</a></li>
+        <li><a href="#download">Download</a></li>
+      </ul>
+      <a class="gh" href="https://github.com/uditalias/kvault" target="_blank" rel="noopener">GitHub <span class="arrow">↗</span></a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1 class="hero-title reveal d2">
+      The <span class="accent">desktop client</span><br />
+      for <span class="subj">Cloudflare Workers KV</span>.
+    </h1>
+    <p class="lede reveal d3">
+      A fast, native app for working with Cloudflare Workers KV — without the dashboard friction.
+    </p>
+    <div class="ctas reveal d4">
+      <a class="btn btn-primary btn-shimmer" href="https://github.com/uditalias/kvault/releases/latest">
+        <span>Download for free</span>
+      </a>
+      <a class="btn btn-ghost" href="https://github.com/uditalias/kvault" target="_blank" rel="noopener">
+        View on GitHub
+      </a>
+    </div>
+    <div class="platforms reveal d5">
+      macOS <span>·</span> Windows <span>·</span> Linux
+    </div>
+  </section>
+
+  <!-- PRODUCT SHOT -->
+  <section class="product">
+    <div class="frame reveal d5">
+      <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/global-search.png"
+           alt="KVault — global search across every Cloudflare KV namespace, grouped by namespace with match counts" />
+    </div>
+    <div class="caption reveal d5">
+      ↑ Global search across every namespace, with regex and case modes. <span>Grouped. Instant.</span>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" class="features">
+    <div class="section-header">
+      <div class="eyebrow">What it does</div>
+      <h2>Built for KV <span class="accent">power users</span>.</h2>
+      <p>
+        Nine things the dashboard makes tedious — and how KVault handles them without ever leaving your keyboard.
+      </p>
+    </div>
+
+    <div class="grid">
+      <article class="feature w3">
+        <span class="num">01 / search</span>
+        <h3>Cross-namespace <span class="accent">search</span>, instantly.</h3>
+        <p>Query every namespace across every account in one shot. Plain, case-sensitive, whole-word, or full regex. Results grouped by namespace with match counts.</p>
+      </article>
+
+      <article class="feature w3">
+        <span class="num">02 / editor</span>
+        <h3>A real <span class="accent">Monaco</span> editor.</h3>
+        <p>The same engine that powers VS Code. Auto-detects JSON, formats on demand, tracks dirty state, saves with ⌘S.</p>
+      </article>
+
+      <article class="feature w2">
+        <span class="num">03 / tabs</span>
+        <h3>Tabbed browsing.</h3>
+        <p>Preview tabs auto-replace. Reopen closed with ⌘⇧T.</p>
+      </article>
+
+      <article class="feature w2">
+        <span class="num">04 / bulk</span>
+        <h3>Bulk ops.</h3>
+        <p>Multi-select, batch delete, export to JSON/CSV, import with preview.</p>
+      </article>
+
+      <article class="feature w2">
+        <span class="num">05 / palette</span>
+        <h3>⌘K everything.</h3>
+        <p>20+ actions — accounts, namespaces, keys, sync, themes — one hotkey.</p>
+      </article>
+
+      <article class="feature w4">
+        <span class="num">06 / storage</span>
+        <h3>Local-first, <span class="accent">secret-safe</span>.</h3>
+        <p>Key names cache to SQLite for instant filter and search — values fetched on demand.
+           API tokens live in your OS keychain, never plaintext, never the app DB.</p>
+      </article>
+
+      <article class="feature w2">
+        <span class="num">07 / ttl</span>
+        <h3>TTL at a glance.</h3>
+        <p>Every key shows <code style="font-family:var(--mono);color:var(--fg);font-size:12px;">5d</code>, <code style="font-family:var(--mono);color:var(--fg);font-size:12px;">2h</code>, or <code style="font-family:var(--mono);color:var(--fg);font-size:12px;">expired</code> inline.</p>
+      </article>
+
+      <article class="feature w3">
+        <span class="num">08 / workspaces</span>
+        <h3>Save your <span class="accent">session</span>.</h3>
+        <p>Persist open tabs, active filters, sidebar state. Restore your exact debugging context tomorrow.</p>
+      </article>
+
+      <article class="feature w3">
+        <span class="num">09 / binary</span>
+        <h3>Binary? No problem.</h3>
+        <p>Hex viewer with ASCII column. Inline previews for PNG, JPEG, GIF. Text? Monaco. Image? Just show it.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- THEMES -->
+  <section id="themes" class="themes">
+    <div class="section-header">
+      <div class="eyebrow">Appearance</div>
+      <h2>Nine themes. <span class="accent">One</span> aesthetic.</h2>
+      <p>Applied consistently across the UI and the Monaco editor — pick yours from Settings.</p>
+    </div>
+
+    <div class="themes-grid">
+      <a class="theme-card" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-catppuccin-mocha.png" target="_blank" rel="noopener">
+        <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-catppuccin-mocha.png" alt="Catppuccin Mocha theme" />
+        <div class="label">catppuccin-mocha</div>
+      </a>
+      <a class="theme-card" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-one-dark-pro.png" target="_blank" rel="noopener">
+        <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-one-dark-pro.png" alt="One Dark Pro theme" />
+        <div class="label">one-dark-pro</div>
+      </a>
+      <a class="theme-card" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-dracula.png" target="_blank" rel="noopener">
+        <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-dracula.png" alt="Dracula theme" />
+        <div class="label">dracula</div>
+      </a>
+      <a class="theme-card" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-nord.png" target="_blank" rel="noopener">
+        <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-nord.png" alt="Nord theme" />
+        <div class="label">nord</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- DOWNLOAD -->
+  <section id="download" class="download">
+    <div class="section-header">
+      <div class="eyebrow">Get it</div>
+      <h2>Download <span class="accent">KVault</span>.</h2>
+      <p>Pick your platform. Every build is MIT-licensed and open source.</p>
+    </div>
+
+    <div class="download-cta">
+      <a class="btn-mega btn-shimmer" href="https://github.com/uditalias/kvault/releases/latest">
+        <span>Download for your platform</span> <span class="arrow">↗</span>
+      </a>
+
+      <div class="platforms-row">
+        <div class="platform-col">
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+          </span>
+          <div class="os">macOS</div>
+          <div class="variants">Apple Silicon<br />Intel</div>
+        </div>
+        <div class="platform-col">
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          </span>
+          <div class="os">Windows</div>
+          <div class="variants">Installer (.exe)<br />MSI</div>
+        </div>
+        <div class="platform-col">
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12.504 0c-.155 0-.315.008-.48.021-4.226.333-3.105 4.807-3.17 6.298-.076 1.092-.3 1.953-1.05 3.02-.885 1.051-2.127 2.75-2.716 4.521-.278.832-.41 1.684-.287 2.489a.424.424 0 00-.11.135c-.26.268-.45.6-.663.839-.199.199-.485.267-.797.4-.313.136-.658.269-.864.68-.09.189-.136.394-.132.602 0 .199.027.4.055.6.058.399.116.798-.02 1.025-.28.489-.236.793-.1 1.046.138.253.433.431.718.638.58.435 1.212.785 1.533 1.337.164.311.461.567.854.78.356.195.773.346 1.178.428 1.213.245 2.16-.123 2.61-.605.485-.546.745-1.138.828-1.89.094-.855.04-1.64-.24-2.276-.137-.33-.331-.598-.494-.805-.163-.207-.293-.35-.283-.433.015-.126.022-.293.046-.446.026-.168.087-.344.185-.516.09-.161.17-.311.25-.456.03-.07.048-.137.049-.2.01-.133-.023-.243-.075-.324-.09-.128-.21-.247-.387-.441-.08-.088-.148-.17-.241-.321-.102-.168-.19-.29-.234-.444-.032-.076-.058-.16-.075-.25-.02-.109-.03-.227-.035-.351-.01-.25.013-.527.108-.78.091-.252.19-.452.302-.652.085-.151.147-.302.246-.453.092-.15.224-.303.432-.453.128-.094.285-.183.453-.236.213-.093.424-.143.636-.143.211 0 .423.05.636.143.169.054.325.142.453.236.208.15.339.303.43.453.1.151.163.302.248.453.112.2.21.4.302.652.095.253.117.53.108.78-.005.124-.015.242-.035.352-.017.089-.043.173-.076.25-.043.153-.132.275-.234.443-.093.15-.16.233-.24.32-.178.195-.298.314-.388.442-.052.08-.085.19-.074.323 0 .063.02.13.048.2.08.146.16.296.25.457.099.172.16.348.186.516.024.153.03.32.045.446.01.082-.12.226-.283.433-.163.207-.357.475-.494.805-.28.636-.333 1.421-.24 2.276.084.752.343 1.344.828 1.89.45.482 1.397.85 2.61.605.406-.082.822-.233 1.178-.427.393-.214.69-.47.854-.781.321-.552.953-.902 1.533-1.337.286-.207.58-.385.718-.638.136-.253.18-.557-.1-1.046-.137-.227-.08-.626-.02-1.025.028-.2.055-.401.055-.6.004-.208-.042-.413-.132-.602-.206-.411-.551-.544-.864-.68-.312-.133-.598-.201-.797-.4-.213-.239-.402-.571-.662-.839a.424.424 0 00-.11-.135c.122-.805-.009-1.657-.287-2.489-.589-1.771-1.831-3.47-2.717-4.521-.75-1.067-.973-1.928-1.049-3.02-.065-1.49 1.056-5.965-3.17-6.298a6.608 6.608 0 00-.483-.021z"/></svg>
+          </span>
+          <div class="os">Linux</div>
+          <div class="variants">x86_64 · ARM64<br />AppImage · .deb</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="foot">
+      Free and open source. <a href="https://github.com/uditalias/kvault#build-from-source">Or build it yourself.</a>
+    </p>
+  </section>
+
+  <footer>
+    <span>© 2026 · MIT License · Built with <a href="https://v2.tauri.app/" target="_blank" rel="noopener">Tauri 2</a></span>
+    <span>KVault is not affiliated with Cloudflare.</span>
+  </footer>
+
+  <script>
+    // Trigger hero reveal animations
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+    });
+
+    // Nav border on scroll
+    const nav = document.getElementById('nav');
+    const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 12);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    // Fetch latest release and fill in version-templated spots.
+    // Falls back silently to the hardcoded version already in the DOM.
+    (async () => {
+      try {
+        const r = await fetch('https://api.github.com/repos/uditalias/kvault/releases/latest');
+        if (!r.ok) return;
+        const { tag_name } = await r.json();
+        if (!tag_name) return;
+        const v = tag_name.replace(/^v/, '');
+        document.querySelectorAll('[data-version-prefix]').forEach(el => {
+          el.textContent = el.getAttribute('data-version-prefix') + v;
+        });
+        document.querySelectorAll('[data-file]').forEach(el => {
+          el.textContent = el.getAttribute('data-file').replaceAll('{v}', v);
+        });
+      } catch { /* offline or rate limited; hardcoded values stand */ }
+    })();
+  </script>
+</body>
+</html>
