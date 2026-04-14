@@ -1,3 +1,11 @@
+## 0.0.3 (2026-04-14)
+
+- ci: build ARM64 Linux bundles in release workflow (#1) (96505b6)
+- chore: sync package-lock version with package.json (2696ca2)
+- feat(update): add update-check feature (c1cff31)
+- chore: ignore .worktrees/ directory (10ca6d3)
+- Add font smoothing properties in index.css (a63eca3)
+
 ## 0.0.2 (2026-04-14)
 
 - Update GitHub Actions workflows to use string interpolation for conditional checks (8c51ecc)
