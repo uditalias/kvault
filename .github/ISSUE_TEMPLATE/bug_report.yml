@@ -1,0 +1,94 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please fill out the details below so we can reproduce and fix it.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear description of the bug.
+      placeholder: What happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this?
+      placeholder: |
+        1. Open KVault
+        2. Add a Cloudflare account
+        3. Open a namespace and …
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened? Include error messages or screenshots if applicable.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: KVault Version
+      description: Find this under the **About** section in Settings, or check the installed app bundle.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Windows
+        - Linux
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: OS Version
+      description: e.g. macOS 15.2, Windows 11 24H2, Ubuntu 24.04
+      placeholder: "macOS 15.2"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: How did you install KVault?
+      options:
+        - Downloaded release from GitHub
+        - Built from source
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other context, logs, or screenshots. For crashes on macOS, the Console.app crash report helps a lot.

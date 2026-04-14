@@ -235,8 +235,3 @@ npm run tauri build
 
 [MIT](LICENSE)
 
-<br />
-
-<p align="center">
-  <sub>Built for developers who live in the terminal, not the dashboard.</sub>
-</p>
