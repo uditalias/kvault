@@ -125,7 +125,7 @@ export default function TabBar() {
               onContextMenu={(e) => handleContextMenu(e, tab.id)}
               className={`group flex items-center h-full px-3 text-sm cursor-pointer select-none shrink-0 border-r border-[var(--border)] border-t-2 ${
                 isActive
-                  ? 'relative z-20 bg-[var(--bg-primary)] text-[var(--text-primary)] border-t-[var(--accent)]'
+                  ? 'sticky left-0 right-0 z-20 bg-[var(--bg-primary)] text-[var(--text-primary)] border-t-[var(--accent)]'
                   : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] border-t-transparent'
               }`}
             >

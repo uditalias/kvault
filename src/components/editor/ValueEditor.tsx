@@ -250,6 +250,12 @@ export function ValueEditor({ accountId, namespaceId, keyName, isDeleted }: Valu
       editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
         handleSave();
       });
+
+      // Override Monaco's default Cmd+K (chord prefix / delete-line) so the
+      // global command palette opens even when the editor has focus.
+      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK, () => {
+        window.dispatchEvent(new CustomEvent('kvault:open-command-palette'));
+      });
     },
     [handleSave, monacoThemeName],
   );

@@ -20,7 +20,7 @@
 <br />
 
 <p align="center">
-  <img src="public/screenshots/key-list-ttl.png" alt="KVault — virtualized key list with TTL column" width="900" />
+  <img src="public/screenshots/global-search.png" alt="KVault — global search across every namespace with results grouped by namespace" width="900" />
 </p>
 
 <br />

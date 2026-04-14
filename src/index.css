@@ -3,6 +3,17 @@
 @import "tailwindcss";
 @import "tw-shimmer";
 
+/*
+ * Shimmer tuning — tw-shimmer's default dark-mode highlight is intentionally
+ * subtle and disappears against our muted surface greys. Boost the highlight
+ * brightness, narrow the band, and keep the speed controlled by the container.
+ * Applies anywhere we wrap skeletons in `.shimmer-container`.
+ */
+.shimmer-container {
+  --shimmer-color: oklch(1 0 0 / 0.18);
+  --shimmer-bg-spread: 200px;
+}
+
 :root {
   /* Typography */
   --font-ui: 'Inter', ui-sans-serif, system-ui, sans-serif;
