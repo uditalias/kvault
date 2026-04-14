@@ -25,7 +25,7 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install system dependencies (Linux)
         if: matrix.platform == 'ubuntu-latest'
@@ -34,9 +34,9 @@ jobs:
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libsecret-1-dev
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Setup Rust
@@ -52,6 +52,26 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Extract release notes from CHANGELOG.md
+        id: changelog
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          # Grab the section for this version: from "## X.Y.Z" to the next "## " (exclusive)
+          NOTES=$(awk -v ver="## ${VERSION}" '
+            $0 ~ "^"ver"( |$)" {flag=1; next}
+            flag && /^## / {exit}
+            flag {print}
+          ' CHANGELOG.md)
+          if [ -z "$NOTES" ]; then
+            NOTES="See [CHANGELOG.md](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/CHANGELOG.md)."
+          fi
+          {
+            echo "notes<<EOF_NOTES"
+            echo "$NOTES"
+            echo "EOF_NOTES"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Build and release
         uses: tauri-apps/tauri-action@v0
         env:
@@ -59,8 +79,7 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: KVault ${{ github.ref_name }}
-          releaseBody: |
-            See the [changelog](https://github.com/${{ github.repository }}/commits/${{ github.ref_name }}) for details.
+          releaseBody: ${{ steps.changelog.outputs.notes }}
           releaseDraft: false
           prerelease: false
           args: --target ${{ matrix.target }}
