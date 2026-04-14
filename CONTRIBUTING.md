@@ -132,7 +132,7 @@ Use clear, descriptive commit messages. We loosely follow [Conventional Commits]
 
 ### Releasing
 
-Releases are cut locally with `npm run release` (see [scripts/release.js](scripts/release.js)):
+Releases are cut locally with `npm run release` (see [scripts/release.cjs](scripts/release.cjs)):
 
 1. Bumps version in `package.json`, `src-tauri/Cargo.toml`, and `src-tauri/tauri.conf.json`
 2. Runs tests + type-check
