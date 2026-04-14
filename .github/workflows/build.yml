@@ -12,9 +12,11 @@ concurrency:
 
 jobs:
   test-rust:
+    # Skip on release commits — the Release workflow runs the same checks in preflight.
+    if: ${{ !startsWith(github.event.head_commit.message, 'release: v') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install system dependencies
         run: |
@@ -38,12 +40,13 @@ jobs:
         run: cargo clippy -- -D warnings
 
   typecheck-frontend:
+    if: ${{ !startsWith(github.event.head_commit.message, 'release: v') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: npm
