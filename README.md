@@ -18,6 +18,18 @@
 </p>
 
 <p align="center">
+  <a href="#why-kvault">Why KVault?</a> &bull;
+  <a href="#features">Features</a> &bull;
+  <a href="#keyboard-shortcuts">Keyboard Shortcuts</a> &bull;
+  <a href="#themes">Themes</a> &bull;
+  <a href="#download">Download</a> &bull;
+  <a href="#connect-your-account">Connect Your Account</a> &bull;
+  <a href="#build-from-source">Build from Source</a>
+</p>
+
+---
+
+<p align="center">
   <img src="public/screenshots/global-search.png" alt="KVault — global search across every namespace with results grouped by namespace" width="900" />
 </p>
 
