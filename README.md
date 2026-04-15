@@ -18,6 +18,11 @@
 </p>
 
 <p align="center">
+  <a href="https://uditalias.github.io/kvault">Website</a> &bull;
+  <a href="https://uditalias.github.io/kvault/docs">Docs</a>
+</p>
+
+<p align="center">
   <a href="#why-kvault">Why KVault?</a> &bull;
   <a href="#features">Features</a> &bull;
   <a href="#keyboard-shortcuts">Keyboard Shortcuts</a> &bull;
