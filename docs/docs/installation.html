@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation — KVault Docs</title>
+  <meta name="description" content="Download and install KVault on macOS, Windows, or Linux, and handle the first-launch security prompt." />
+  <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/kvault.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/docs.css" />
+</head>
+<body>
+  <nav class="topnav"></nav>
+
+  <div class="docs-shell">
+    <aside class="sidebar"></aside>
+
+    <main class="content">
+      <header class="page-header">
+        <p class="eyebrow">Getting Started</p>
+        <h1>Installation</h1>
+        <p class="lede">
+          Download the latest build for your platform, then handle the
+          one-time platform warning. KVault is currently unsigned, which is
+          why you'll see a security prompt on first launch.
+        </p>
+      </header>
+
+      <section>
+        <h2>Download</h2>
+        <p>
+          Grab the latest installer from the
+          <a href="https://github.com/uditalias/kvault/releases/latest">Releases page</a>
+          on GitHub.
+        </p>
+        <table>
+          <thead>
+            <tr><th>Platform</th><th>File</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>macOS (Apple Silicon)</td><td><code>KVault_&lt;version&gt;_aarch64.dmg</code></td><td>M Series</td></tr>
+            <tr><td>macOS (Intel)</td><td><code>KVault_&lt;version&gt;_x64.dmg</code></td><td>Intel-based Macs</td></tr>
+            <tr><td>Windows</td><td><code>KVault_&lt;version&gt;_x64-setup.exe</code> / <code>.msi</code></td><td>Windows 10/11, 64-bit</td></tr>
+            <tr><td>Linux (x86_64)</td><td><code>KVault_&lt;version&gt;_amd64.AppImage</code> / <code>_amd64.deb</code></td><td>x86_64</td></tr>
+            <tr><td>Linux (ARM64)</td><td><code>KVault_&lt;version&gt;_aarch64.AppImage</code> / <code>_arm64.deb</code></td><td>aarch64</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2 id="macos">macOS</h2>
+
+        <h3>Install</h3>
+        <ol>
+          <li>Download the <code>.dmg</code> matching your CPU (Apple Silicon vs Intel).</li>
+          <li>Open the disk image and drag <strong>KVault</strong> into <strong>Applications</strong>.</li>
+          <li>Eject the disk image.</li>
+        </ol>
+
+        <h3>First launch — Gatekeeper</h3>
+        <p>
+          KVault is not yet notarized by Apple, so macOS Gatekeeper will block
+          the first launch with a message like
+          <em>"KVault can't be opened because Apple cannot check it for malicious software."</em>
+          This is expected — the binary is built and published from a public
+          GitHub release, but Apple's notarization service requires a paid
+          Developer ID certificate.
+        </p>
+
+        <p>To open it the first time, use one of these two methods:</p>
+
+        <h3>Option A — Right-click → Open</h3>
+        <ol>
+          <li>Open <strong>Applications</strong> in Finder.</li>
+          <li>Right-click (or Control-click) <strong>KVault</strong> and choose <strong>Open</strong>.</li>
+          <li>Click <strong>Open</strong> in the confirmation dialog.</li>
+        </ol>
+        <p>You only need to do this once. After that, KVault opens normally.</p>
+
+        <h3>Option B — Remove the quarantine attribute</h3>
+        <p>If the right-click menu doesn't show an Open option, run this in Terminal:</p>
+        <pre><code>xattr -dr com.apple.quarantine /Applications/KVault.app</code></pre>
+        <p>Then open KVault from Launchpad or Spotlight as usual.</p>
+
+        <div class="callout info">
+          <strong>Why is this necessary?</strong> macOS attaches a
+          <code>com.apple.quarantine</code> extended attribute to anything
+          downloaded from a browser. Notarized apps bypass it; unnotarized
+          apps trigger Gatekeeper. Both options above tell Gatekeeper you
+          trust this specific app.
+        </div>
+      </section>
+
+      <section>
+        <h2 id="windows">Windows</h2>
+
+        <h3>Install</h3>
+        <ol>
+          <li>Download either <code>KVault_&lt;version&gt;_x64-setup.exe</code> (NSIS installer) or <code>KVault_&lt;version&gt;_x64.msi</code> (MSI installer). Both work — choose <code>.msi</code> if your organization deploys via Group Policy.</li>
+          <li>Run the installer and follow the prompts.</li>
+        </ol>
+
+        <h3>First launch — SmartScreen</h3>
+        <p>
+          Windows SmartScreen will show
+          <em>"Windows protected your PC"</em> because the binary is
+          not signed with an Authenticode certificate.
+        </p>
+        <ol>
+          <li>Click <strong>More info</strong>.</li>
+          <li>Click <strong>Run anyway</strong>.</li>
+        </ol>
+        <p>You only need to do this once.</p>
+
+        <div class="callout info">
+          <strong>Why is this necessary?</strong> Windows trusts code signed
+          by certificates with established reputation. KVault is not yet
+          code-signed, so SmartScreen flags the first run. The installer is
+          built directly from the public source on GitHub Actions.
+        </div>
+      </section>
+
+      <section>
+        <h2 id="linux">Linux</h2>
+
+        <h3>AppImage (any distro)</h3>
+        <pre><code>chmod +x KVault_&lt;version&gt;_amd64.AppImage
+./KVault_&lt;version&gt;_amd64.AppImage</code></pre>
+        <p>
+          Optional: integrate into your application menu using
+          <a href="https://github.com/TheAssassin/AppImageLauncher">AppImageLauncher</a>.
+        </p>
+
+        <h3>Debian / Ubuntu</h3>
+        <pre><code>sudo apt install ./KVault_&lt;version&gt;_amd64.deb</code></pre>
+        <p>
+          Then launch <strong>KVault</strong> from your application menu, or
+          run <code>kvault</code> from a terminal.
+        </p>
+
+        <h3>WebKit dependency</h3>
+        <p>
+          KVault is built on Tauri 2, which uses the system WebKit. It depends
+          on <code>libwebkit2gtk-4.1-0</code> (GTK3). On Debian-based systems
+          you can install it explicitly:
+        </p>
+        <pre><code>sudo apt install libwebkit2gtk-4.1-0</code></pre>
+
+        <div class="callout warn">
+          <strong>Ubuntu 25.10 and newer:</strong> the
+          <code>libwebkit2gtk-4.1-0</code> package was dropped from the
+          archive. KVault will not run on these versions until the upstream
+          Tauri GTK4 migration lands. Workarounds: use Ubuntu 24.04 LTS
+          (in a VM or container), or wait for a future KVault release built
+          against GTK4.
+        </div>
+
+        <h3>Supported distros</h3>
+        <ul>
+          <li>Ubuntu 22.04 LTS, 24.04 LTS</li>
+          <li>Debian 12+</li>
+          <li>Fedora 39+ (install <code>webkit2gtk4.1</code>)</li>
+          <li>Arch / Manjaro (install <code>webkit2gtk-4.1</code>)</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Verify the install</h2>
+        <ol>
+          <li>Launch KVault. You should see the welcome screen with keyboard shortcuts.</li>
+          <li>Open the command palette with <kbd>Cmd</kbd>+<kbd>K</kbd> (<kbd>Ctrl</kbd>+<kbd>K</kbd> on Windows/Linux).</li>
+          <li>Continue to <a href="getting-started.html">Getting Started</a> to connect your first Cloudflare account.</li>
+        </ol>
+        <figure>
+          <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/welcome.png" alt="KVault welcome screen" />
+          <figcaption>The welcome screen on first launch.</figcaption>
+        </figure>
+      </section>
+
+      <section>
+        <h2>Uninstall</h2>
+        <ul>
+          <li><strong>macOS:</strong> drag <strong>KVault</strong> from <code>/Applications</code> to the Trash.</li>
+          <li><strong>Windows:</strong> uninstall via <strong>Settings → Apps</strong>, or run the installer's <code>Uninstall KVault</code> shortcut.</li>
+          <li><strong>Linux (deb):</strong> <code>sudo apt remove kvault</code></li>
+          <li><strong>Linux (AppImage):</strong> delete the AppImage file.</li>
+        </ul>
+        <p>
+          Local data (cached key names, accounts metadata) lives in your
+          OS app-data directory. API tokens are stored in the OS keychain
+          and removed when you delete the corresponding account inside
+          KVault — uninstalling the app does not delete them.
+        </p>
+      </section>
+
+      <nav class="page-nav">
+        <a href="index.html"><span class="label">Previous</span>Introduction</a>
+        <a href="getting-started.html" class="next"><span class="label">Next</span>Getting Started</a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="assets/docs.js"></script>
+</body>
+</html>

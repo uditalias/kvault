@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Build from Source — KVault Docs</title>
+  <meta name="description" content="Build KVault from source — prerequisites, clone, install, development and production builds, and a tour of the project layout." />
+  <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/kvault.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/docs.css" />
+</head>
+<body>
+  <nav class="topnav"></nav>
+
+  <div class="docs-shell">
+    <aside class="sidebar"></aside>
+
+    <main class="content">
+      <header class="page-header">
+        <p class="eyebrow">Advanced</p>
+        <h1>Build from Source</h1>
+        <p class="lede">
+          Prefer to compile KVault yourself? This page walks through the
+          prerequisites, dev workflow, and production build — from a fresh
+          clone to a signed-less binary in <code>src-tauri/target</code>.
+        </p>
+      </header>
+
+      <section>
+        <h2>Prerequisites</h2>
+        <ul>
+          <li><strong>Node.js</strong> v18 or newer (v20 LTS recommended).</li>
+          <li><strong>Rust</strong> stable toolchain, installed via <a href="https://rustup.rs/">rustup</a>.</li>
+          <li><strong>Tauri 2 system prerequisites</strong> — see the official <a href="https://v2.tauri.app/start/prerequisites/">Tauri prerequisites guide</a> for the canonical, up-to-date list per platform.</li>
+        </ul>
+        <h3>Platform-specific notes</h3>
+        <ul>
+          <li><strong>macOS</strong> — install the Xcode Command Line Tools: <code>xcode-select --install</code>.</li>
+          <li><strong>Windows</strong> — Microsoft Visual C++ (MSVC) Build Tools and WebView2. WebView2 is bundled with Windows 11 and current Windows 10 installs.</li>
+          <li><strong>Linux</strong> — install <code>libwebkit2gtk-4.1-dev</code>, <code>build-essential</code>, <code>curl</code>, <code>wget</code>, <code>file</code>, <code>libssl-dev</code>, <code>libayatana-appindicator3-dev</code>, and <code>librsvg2-dev</code>.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Clone &amp; install</h2>
+        <pre><code>git clone https://github.com/uditalias/kvault.git
+cd kvault
+npm install</code></pre>
+        <p>
+          <code>npm install</code> pulls the JavaScript dependencies. Rust
+          crates for the Tauri backend are fetched and compiled the first time
+          you run a <code>tauri</code> command.
+        </p>
+      </section>
+
+      <section>
+        <h2>Run in development mode</h2>
+        <pre><code>npm run tauri dev</code></pre>
+        <p>
+          This starts the Vite dev server for the React frontend and launches
+          the Tauri shell pointed at it. You get hot-reload for the UI and
+          automatic rebuilds of the Rust backend as you edit files under
+          <code>src-tauri/</code>.
+        </p>
+      </section>
+
+      <section>
+        <h2>Frontend-only dev</h2>
+        <pre><code>npm run dev</code></pre>
+        <p>
+          Runs Vite on its own, without the Tauri shell. The app loads in your
+          browser, but anything that calls into Rust will fail —
+          <code>window.__TAURI__</code> is <code>undefined</code> in this mode.
+          Useful for iterating on pure UI work (layout, styling, Storybook-like
+          component tweaks) where the backend isn't involved.
+        </p>
+      </section>
+
+      <section>
+        <h2>Type-check &amp; build frontend</h2>
+        <pre><code>npm run build</code></pre>
+        <p>
+          This runs <code>tsc &amp;&amp; vite build</code> — a full TypeScript
+          type-check followed by a production bundle of the frontend. It
+          doubles as the project's type-check since there's no separate
+          <code>tsc --noEmit</code> script.
+        </p>
+      </section>
+
+      <section>
+        <h2>Production build</h2>
+        <pre><code>npm run tauri build</code></pre>
+        <p>
+          Produces a release binary plus platform installers under
+          <code>src-tauri/target/release/bundle/</code> (<code>.dmg</code> on
+          macOS, <code>.msi</code>/<code>.exe</code> on Windows,
+          <code>.AppImage</code>/<code>.deb</code> on Linux).
+        </p>
+        <div class="callout warn">
+          <strong>Unsigned binaries.</strong> Code signing and notarization
+          are not configured in this repo, so builds you produce locally are
+          unsigned. See the <a href="installation.html">Installation page</a>
+          for the platform-specific caveats (Gatekeeper on macOS, SmartScreen
+          on Windows) that apply to unsigned builds.
+        </div>
+      </section>
+
+      <section>
+        <h2>Project layout</h2>
+        <ul>
+          <li><code>src/</code> — React 19 + TypeScript frontend (Zustand stores, components, themes).</li>
+          <li><code>src-tauri/</code> — Rust backend (Tauri 2 commands, SQLite via <code>tauri-plugin-sql</code>, Cloudflare API client, OS keychain integration).</li>
+          <li><code>public/</code> — static assets (icons, screenshots).</li>
+          <li><code>docs/</code> — landing page and this docs site (GitHub Pages source).</li>
+          <li><code>scripts/</code> — build helpers.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Architecture overview</h2>
+        <p>
+          The Rust side owns persistence — SQLite holds a local cache of key
+          names for instant filtering, and the OS keychain stores Cloudflare
+          API tokens so they never hit disk in plaintext — as well as all
+          Cloudflare HTTP traffic. The React frontend calls into Rust via
+          Tauri's <code>invoke</code> and subscribes to <code>emit</code>
+          events for progress streams like background sync.
+        </p>
+        <p>
+          For a deeper map of modules, stores, and the command surface, see
+          the <a href="https://github.com/uditalias/kvault/blob/main/CLAUDE.md">CLAUDE.md</a>
+          in the repo root.
+        </p>
+      </section>
+
+      <nav class="page-nav">
+        <a href="features/themes.html" class="prev">
+          <span class="label">Previous</span>
+          Themes
+        </a>
+        <a href="faq.html" class="next">
+          <span class="label">Next</span>
+          FAQ &amp; Troubleshooting
+        </a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="assets/docs.js"></script>
+</body>
+</html>

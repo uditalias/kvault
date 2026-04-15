@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hex Viewer & Binary Support — KVault Docs</title>
+  <meta name="description" content="KVault detects binary values and renders an address/hex/ASCII hex viewer. Embedded PNG/JPEG/GIF images preview inline." />
+  <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/kvault.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/docs.css" />
+</head>
+<body>
+  <nav class="topnav"></nav>
+
+  <div class="docs-shell">
+    <aside class="sidebar"></aside>
+
+    <main class="content">
+      <header class="page-header">
+        <p class="eyebrow">Features</p>
+        <h1>Hex Viewer & Binary Support</h1>
+        <p class="lede">
+          Not every KV value is text. KVault detects binary data and renders a proper hex viewer — and previews embedded images inline.
+        </p>
+      </header>
+
+      <section>
+        <h2>Overview</h2>
+        <p>
+          KV values are bytes, not strings — and KVault treats them that way.
+          When you open a value, KVault inspects its contents and routes
+          text-like bytes to the <a href="monaco-editor.html">Monaco editor</a>
+          and binary blobs to a dedicated hex viewer. The detection is
+          automatic and based on the actual bytes, not the key name or content
+          type.
+        </p>
+        <p>
+          The hex viewer renders three synchronized columns: an address column
+          showing byte offsets, a hex column showing the raw bytes, and an
+          ASCII column showing printable characters (with non-printable bytes
+          rendered as dots). For common image formats, KVault sniffs the magic
+          bytes and renders a live preview of the image above the hex view so
+          you can confirm what you're looking at.
+        </p>
+      </section>
+
+      <section>
+        <h2>How to use it</h2>
+        <p>
+          There's nothing to configure. Open any key; if its value is binary,
+          the hex viewer appears instead of the text editor. Values cross the
+          Tauri boundary as a <code>Vec&lt;u8&gt;</code> and are rendered by
+          KVault's native viewer — large binary payloads stay responsive.
+        </p>
+        <ul>
+          <li><strong>PNG, JPEG, GIF</strong> — previewed inline above the hex columns.</li>
+          <li><strong>Other binary</strong> — address/hex/ASCII columns only; scroll through the full payload.</li>
+          <li><strong>Ambiguous values</strong> — KVault defaults to treating them as text; if that's wrong, the status bar flags the detected content type.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Tips</h2>
+        <ul>
+          <li>KVault's value-read response includes a size field, so the viewer knows immediately whether to stream or render in full.</li>
+          <li>Binary values can't be edited in place — use <a href="bulk-operations.html">export/import</a> if you need to replace a binary payload.</li>
+          <li>If you're storing images in KV, the hex viewer's inline preview is the fastest way to audit which key holds which asset.</li>
+          <li>Combine with <a href="global-search.html">global search</a> on the key name to locate binary assets across accounts quickly.</li>
+        </ul>
+      </section>
+
+      <nav class="page-nav">
+        <a href="monaco-editor.html"><span class="label">Previous</span>Monaco Editor</a>
+        <a href="workspaces.html" class="next"><span class="label">Next</span>Workspaces</a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="../assets/docs.js"></script>
+</body>
+</html>

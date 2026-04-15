@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulk Operations — KVault Docs</title>
+  <meta name="description" content="Multi-select keys with range-select, then delete or export to JSON/CSV. Import from JSON or CSV with a preview step before committing." />
+  <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/kvault.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/docs.css" />
+</head>
+<body>
+  <nav class="topnav"></nav>
+
+  <div class="docs-shell">
+    <aside class="sidebar"></aside>
+
+    <main class="content">
+      <header class="page-header">
+        <p class="eyebrow">Features</p>
+        <h1>Bulk Operations</h1>
+        <p class="lede">
+          Select multiple keys with checkboxes or range-select, then delete or export in batch. Export to JSON or CSV. Import with a preview step.
+        </p>
+      </header>
+
+      <section>
+        <h2>Overview</h2>
+        <p>
+          Single-key operations don't cut it when you're cleaning up a stale
+          namespace or migrating data. KVault's bulk operations let you act on
+          many keys at once — select them from the key list, then delete,
+          export, or (in the case of imports) add them wholesale, always with
+          a confirmation step before anything destructive runs.
+        </p>
+        <p>
+          Selection works the way you expect: click a checkbox to toggle a
+          single key, Shift-click to range-select between two checkboxes, or
+          use the header checkbox to select every filtered row. The selection
+          respects the current <a href="filters.html">filter</a>, so you can
+          narrow first and select second to avoid grabbing keys you didn't
+          mean to.
+        </p>
+      </section>
+
+      <section>
+        <h2>How to use it</h2>
+        <ul>
+          <li><strong>Range-select</strong> — click the first checkbox, then Shift-click the last; everything in between is selected.</li>
+          <li><strong>Bulk delete</strong> — with a selection, choose Delete; KVault asks for confirmation and deletes sequentially with progress.</li>
+          <li><strong>Export to JSON</strong> — writes an array of <code>{ key, value, metadata, expiration }</code> objects. Values are fetched fresh at export time.</li>
+          <li><strong>Export to CSV</strong> — flat <code>key,value</code> rows, good for spreadsheet triage.</li>
+          <li><strong>Import</strong> — pick a JSON or CSV file; KVault shows a preview table with each row's key, value, and detected conflicts before you confirm.</li>
+        </ul>
+        <p>
+          The import preview is where you catch mistakes. It flags keys that
+          already exist in the target namespace, highlights values that will
+          overwrite, and lets you cancel without any writes happening.
+        </p>
+      </section>
+
+      <section>
+        <h2>Tips</h2>
+        <ul>
+          <li>Export before deleting — bulk deletes aren't reversible against Cloudflare; the JSON export is your backup.</li>
+          <li>Combine with <a href="filters.html">filters</a> to bound a destructive operation: filter first, select-all, then delete.</li>
+          <li>Use the <a href="command-palette.html">command palette</a> to trigger import/export without hunting for the menu.</li>
+          <li>Large imports stream progress per row — leave KVault open during big imports to see per-row success/failure.</li>
+        </ul>
+      </section>
+
+      <nav class="page-nav">
+        <a href="workspaces.html"><span class="label">Previous</span>Workspaces</a>
+        <a href="ttl.html" class="next"><span class="label">Next</span>TTL Visibility</a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="../assets/docs.js"></script>
+</body>
+</html>

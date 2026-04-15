@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Account Management — KVault Docs</title>
+  <meta name="description" content="Connect multiple Cloudflare accounts and browse every namespace in a unified tree. Tokens are kept in your OS keychain." />
+  <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/kvault.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/docs.css" />
+</head>
+<body>
+  <nav class="topnav"></nav>
+
+  <div class="docs-shell">
+    <aside class="sidebar"></aside>
+
+    <main class="content">
+      <header class="page-header">
+        <p class="eyebrow">Features</p>
+        <h1>Multi-Account Management</h1>
+        <p class="lede">
+          Connect multiple Cloudflare accounts and browse every namespace in a
+          unified tree view — no more logging in and out or juggling browser tabs.
+        </p>
+      </header>
+
+      <section>
+        <h2>Overview</h2>
+        <p>
+          KVault treats accounts as first-class citizens. You can connect as many
+          Cloudflare accounts as you need — personal, team, staging, production —
+          and KVault renders them side by side in a single sidebar tree. Each
+          account expands to show its namespaces, and each namespace expands to
+          show its cached keys. The whole hierarchy is searchable, filterable, and
+          keyboard-navigable without ever leaving the app.
+        </p>
+        <p>
+          Every account carries its own connection state, sync progress, and error
+          indicators. If one account's token expires, the others keep working. If
+          a namespace sync fails for one account, the rest of the tree stays
+          responsive. This matters when you're responding to an incident and you
+          need to look at production and staging at the same time.
+        </p>
+        <figure>
+          <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/welcome.png" alt="Unified accounts tree in the sidebar with the welcome screen showing keyboard shortcuts" />
+          <figcaption>The unified accounts tree with multiple accounts expanded in the sidebar.</figcaption>
+        </figure>
+      </section>
+
+      <section>
+        <h2>How to use it</h2>
+        <p>
+          Add an account from the sidebar's <strong>Add Account</strong> button,
+          or via the <a href="command-palette.html">command palette</a> with
+          <kbd>Cmd</kbd> <kbd>K</kbd>. You'll be asked for a name (a label you
+          pick) and a Cloudflare API token. KVault validates the token
+          immediately and, on success, lists the account's namespaces and kicks
+          off a background key sync.
+        </p>
+        <p>
+          Each account in the tree shows a small status dot — connected, syncing,
+          or errored. Click an account to collapse or expand it. Right-click (or
+          use the context menu icon) to rename, remove, or refresh its
+          namespaces. Removing an account wipes its tokens from the OS keychain
+          and clears its local cache immediately.
+        </p>
+        <p>
+          For the token itself, KVault uses your operating system's secure
+          credential store — macOS Keychain, Windows Credential Manager, or the
+          Linux Secret Service. Tokens are never written to SQLite, never logged,
+          and never sent anywhere except to <code>api.cloudflare.com</code> on
+          your behalf.
+        </p>
+      </section>
+
+      <section>
+        <h2>Tips</h2>
+        <ul>
+          <li>Use short, descriptive account names (like <code>prod</code> or <code>staging</code>) — they appear everywhere, including the <a href="global-search.html">global search</a> result groupings.</li>
+          <li>Create a scoped token per environment in the Cloudflare dashboard with only the <em>Workers KV Storage: Edit</em> permission. Don't reuse a Global API Key.</li>
+          <li>New to KVault? The <a href="../getting-started.html">Getting Started guide</a> walks through creating your first token and adding your first account.</li>
+          <li>If a namespace sync fails, check the status indicator on that account — it usually means the token needs updated permissions, not that KVault is broken.</li>
+          <li>You can keep accounts expanded or collapsed per session and save that state as part of a <a href="workspaces.html">workspace</a>.</li>
+        </ul>
+      </section>
+
+      <nav class="page-nav">
+        <a href="../shortcuts.html"><span class="label">Previous</span>Keyboard Shortcuts</a>
+        <a href="global-search.html" class="next"><span class="label">Next</span>Global Search</a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="../assets/docs.js"></script>
+</body>
+</html>

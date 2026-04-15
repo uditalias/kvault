@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TTL Visibility — KVault Docs</title>
+  <meta name="description" content="Every key displays its time-to-expiration right in the list. Set TTL when creating or updating keys. Never guess again." />
+  <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/kvault.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/docs.css" />
+</head>
+<body>
+  <nav class="topnav"></nav>
+
+  <div class="docs-shell">
+    <aside class="sidebar"></aside>
+
+    <main class="content">
+      <header class="page-header">
+        <p class="eyebrow">Features</p>
+        <h1>TTL Visibility</h1>
+        <p class="lede">
+          Every key shows its time-to-expiration right in the list — 5d, 2h, 30m, or expired. Set TTL when creating or updating keys, not in a config file.
+        </p>
+      </header>
+
+      <section>
+        <h2>Overview</h2>
+        <p>
+          Cloudflare Workers KV supports per-key expirations, but the dashboard
+          hides them behind clicks. KVault surfaces TTL as a first-class column
+          in every key list. Short durations render as <code>30m</code> or
+          <code>2h</code>, longer ones as <code>5d</code>, and anything past
+          its expiration shows as <code>expired</code> so you can clean it up.
+        </p>
+        <p>
+          The TTL column sorts alongside the rest of the key metadata, which
+          means you can filter a namespace for only keys that are about to
+          expire, export them, and decide whether to refresh them or let them
+          drop. No more surprise cache misses because a feature flag quietly
+          expired over the weekend.
+        </p>
+        <figure>
+          <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/key-list-ttl.png" alt="Key list showing per-key TTL values like 5d, 2h, 30m, and expired" />
+          <figcaption>Per-key TTL values are visible directly in the list — no click-through needed.</figcaption>
+        </figure>
+      </section>
+
+      <section>
+        <h2>How to use it</h2>
+        <p>
+          Create a new key with <kbd>Cmd</kbd> <kbd>N</kbd>. The Create Key
+          dialog detects whether your pasted value is JSON or plain text
+          automatically and exposes an optional TTL field — enter a value in
+          seconds, or leave it blank for a key that never expires.
+        </p>
+        <figure>
+          <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/create-key-dialog.png" alt="The Create Key dialog with Key Name, Content Type (JSON/Text), Value editor, and an optional TTL field" />
+          <figcaption>The Create Key dialog auto-detects JSON vs. text and accepts an optional TTL in seconds.</figcaption>
+        </figure>
+        <p>
+          To change the TTL on an existing key, open it in a <a href="tabs.html">tab</a>
+          and edit the TTL from the key's metadata panel. Saving refreshes the
+          list immediately. Use <a href="bulk-operations.html">bulk export</a>
+          to audit TTLs across a whole namespace at once.
+        </p>
+      </section>
+
+      <section>
+        <h2>Tips</h2>
+        <ul>
+          <li>Expired keys remain visible until Cloudflare prunes them; use them as a to-do list for cleanup.</li>
+          <li>The <a href="command-palette.html">command palette</a> exposes "Create key" directly, so you can jump straight into a TTL-aware create flow.</li>
+          <li>If you manage TTLs in bulk, export to JSON, edit the <code>expiration</code> field in your editor, and re-import via <a href="bulk-operations.html">bulk operations</a>.</li>
+          <li>Combine with <a href="filters.html">filters</a> to focus only on a subset (e.g. session keys) when auditing TTLs.</li>
+        </ul>
+      </section>
+
+      <nav class="page-nav">
+        <a href="bulk-operations.html"><span class="label">Previous</span>Bulk Operations</a>
+        <a href="tabs.html" class="next"><span class="label">Next</span>Tabs & Navigation</a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="../assets/docs.js"></script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronRight, ChevronDown, Database, RefreshCw, Plus } from 'lucide-react';
+import { ChevronRight, ChevronDown, Database, RefreshCw } from 'lucide-react';
 import { Spinner } from '../ui/Spinner';
 import { Skeleton } from '../ui/Skeleton';
 import { useAccountStore } from '../../stores/accountStore';
@@ -292,17 +292,6 @@ export default function AccountTree() {
           </div>
         )}
       </div></ScrollArea>
-
-      {/* Add Account button */}
-      <div className="border-t border-[var(--border)] p-2">
-        <button
-          className="flex items-center gap-2 w-full px-2 py-1.5 text-[length:var(--font-size-sm)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)] rounded-sm transition-colors"
-          onClick={() => setDialogOpen(true)}
-        >
-          <Plus size={14} />
-          Add Account
-        </button>
-      </div>
 
       {/* Context menu */}
       {contextMenu && (

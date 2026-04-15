@@ -84,7 +84,7 @@ KVault is purpose-built for **KV power users**. It brings the speed and convenie
 </tr>
 <tr>
 <td>Single theme</td>
-<td><strong>9 themes including Catppuccin, Dracula, Nord & more</strong></td>
+<td><strong>10 themes including Catppuccin, Dracula, Nord, Cursor Dark & more</strong></td>
 </tr>
 </table>
 
@@ -187,7 +187,7 @@ API tokens are stored in your OS keychain (macOS Keychain, Windows Credential Ma
 
 ## Themes
 
-KVault ships with **9 built-in themes** — 4 dark and 5 light — each applied consistently across the UI *and* the Monaco editor. Switch from the command palette or Settings; the same key looks right at home in every palette.
+KVault ships with **10 built-in themes** — 5 dark and 5 light — each applied consistently across the UI *and* the Monaco editor. Switch from the command palette or Settings; the same key looks right at home in every palette.
 
 <table>
 <tr>
@@ -195,20 +195,20 @@ KVault ships with **9 built-in themes** — 4 dark and 5 light — each applied 
 <td width="50%" align="center"><img src="public/screenshots/theme-one-dark-pro.png" alt="One Dark Pro" /><br /><sub><b>One Dark Pro</b></sub></td>
 </tr>
 <tr>
+<td width="50%" align="center"><img src="public/screenshots/theme-cursor-dark.png" alt="Cursor Dark" /><br /><sub><b>Cursor Dark</b></sub></td>
 <td width="50%" align="center"><img src="public/screenshots/theme-dracula.png" alt="Dracula" /><br /><sub><b>Dracula</b></sub></td>
+</tr>
+<tr>
 <td width="50%" align="center"><img src="public/screenshots/theme-nord.png" alt="Nord" /><br /><sub><b>Nord</b></sub></td>
-</tr>
-<tr>
 <td width="50%" align="center"><img src="public/screenshots/theme-github-light.png" alt="GitHub Light" /><br /><sub><b>GitHub Light</b></sub></td>
+</tr>
+<tr>
 <td width="50%" align="center"><img src="public/screenshots/theme-catppuccin-latte.png" alt="Catppuccin Latte" /><br /><sub><b>Catppuccin Latte</b></sub></td>
-</tr>
-<tr>
 <td width="50%" align="center"><img src="public/screenshots/theme-solarized-light.png" alt="Solarized Light" /><br /><sub><b>Solarized Light</b></sub></td>
-<td width="50%" align="center"><img src="public/screenshots/theme-one-light.png" alt="One Light" /><br /><sub><b>One Light</b></sub></td>
 </tr>
 <tr>
+<td width="50%" align="center"><img src="public/screenshots/theme-one-light.png" alt="One Light" /><br /><sub><b>One Light</b></sub></td>
 <td width="50%" align="center"><img src="public/screenshots/theme-quiet-light.png" alt="Quiet Light" /><br /><sub><b>Quiet Light</b></sub></td>
-<td width="50%"></td>
 </tr>
 </table>
 

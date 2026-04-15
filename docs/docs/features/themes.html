@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Themes — KVault Docs</title>
+  <meta name="description" content="Ten built-in themes — Catppuccin, Dracula, Nord, One Dark Pro, Cursor Dark, and more — apply to both the UI and the Monaco editor." />
+  <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/kvault.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/docs.css" />
+</head>
+<body>
+  <nav class="topnav"></nav>
+
+  <div class="docs-shell">
+    <aside class="sidebar"></aside>
+
+    <main class="content">
+      <header class="page-header">
+        <p class="eyebrow">Features</p>
+        <h1>Themes</h1>
+        <p class="lede">
+          Ten built-in themes — Catppuccin, Dracula, Nord, One Dark Pro, Cursor Dark, and more — apply to both the UI and the Monaco editor.
+        </p>
+      </header>
+
+      <section>
+        <h2>Overview</h2>
+        <p>
+          KVault ships with ten themes out of the box, split evenly
+          between dark and light. Picking a theme updates everything
+          together: the sidebar, tabs, key list, dialogs, and the
+          <a href="monaco-editor.html">Monaco editor</a>. The editor's syntax
+          colors match the surrounding UI so you never get a jarring contrast
+          between chrome and code.
+        </p>
+        <p>
+          Every theme defines a full palette — background layers, foreground
+          tones, borders, accent, and accent states — so components look
+          consistent across the whole app. The accent color also drives
+          affordances like dirty-tab indicators and the active sidebar row,
+          which means a theme change is immediately visible everywhere.
+        </p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <figure>
+            <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-catppuccin-mocha.png" alt="KVault with the Catppuccin Mocha theme applied" />
+            <figcaption>Catppuccin Mocha</figcaption>
+          </figure>
+          <figure>
+            <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-one-dark-pro.png" alt="KVault with the One Dark Pro theme applied" />
+            <figcaption>One Dark Pro</figcaption>
+          </figure>
+          <figure>
+            <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-cursor-dark.png" alt="KVault with the Cursor Dark theme applied" />
+            <figcaption>Cursor Dark</figcaption>
+          </figure>
+          <figure>
+            <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-dracula.png" alt="KVault with the Dracula theme applied" />
+            <figcaption>Dracula</figcaption>
+          </figure>
+          <figure>
+            <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-nord.png" alt="KVault with the Nord theme applied" />
+            <figcaption>Nord</figcaption>
+          </figure>
+          <figure>
+            <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-github-light.png" alt="KVault with the GitHub Light theme applied" />
+            <figcaption>GitHub Light</figcaption>
+          </figure>
+          <figure>
+            <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-catppuccin-latte.png" alt="KVault with the Catppuccin Latte theme applied" />
+            <figcaption>Catppuccin Latte</figcaption>
+          </figure>
+          <figure>
+            <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-solarized-light.png" alt="KVault with the Solarized Light theme applied" />
+            <figcaption>Solarized Light</figcaption>
+          </figure>
+          <figure>
+            <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-one-light.png" alt="KVault with the One Light theme applied" />
+            <figcaption>One Light</figcaption>
+          </figure>
+          <figure>
+            <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-quiet-light.png" alt="KVault with the Quiet Light theme applied" />
+            <figcaption>Quiet Light</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <h2>How to use it</h2>
+        <p>
+          Open <a href="../shortcuts.html">settings</a> with <kbd>Cmd</kbd>
+          <kbd>,</kbd> and pick a theme from the theme picker — it applies
+          instantly, no restart. The <a href="command-palette.html">command
+          palette</a> also exposes each theme as its own command, so you can
+          switch themes from the keyboard with <kbd>Cmd</kbd> <kbd>K</kbd>,
+          type the theme name, Enter.
+        </p>
+        <p>
+          Your theme choice persists across sessions. Themes are part of the
+          settings store and are applied to both Tailwind (via CSS variables)
+          and Monaco (via its theme API) from a single source of truth in
+          <code>src/themes/</code>.
+        </p>
+      </section>
+
+      <section>
+        <h2>Tips</h2>
+        <ul>
+          <li>Dark themes: Catppuccin Mocha, One Dark Pro, Cursor Dark, Dracula, Nord. Light themes: GitHub Light, Catppuccin Latte, Solarized Light, One Light, Quiet Light.</li>
+          <li>Pair a theme change with a <a href="workspaces.html">workspace</a> restore to set the mood for a specific project.</li>
+          <li>Want a custom theme? Themes live under <code>src/themes/</code> — <a href="../build-from-source.html">build from source</a> and add your own.</li>
+          <li>The accent color in every theme drives the active sidebar state and the dirty-<a href="tabs.html">tab</a> indicator — pick a theme whose accent reads well to you.</li>
+        </ul>
+      </section>
+
+      <nav class="page-nav">
+        <a href="sync.html"><span class="label">Previous</span>Background Sync</a>
+        <a href="../build-from-source.html" class="next"><span class="label">Next</span>Build from Source</a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="../assets/docs.js"></script>
+</body>
+</html>

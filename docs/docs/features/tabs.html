@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tabs & Navigation — KVault Docs</title>
+  <meta name="description" content="A tabbed interface for namespaces and keys. Preview tabs auto-replace, pinning keeps them open, and Cmd+Shift+T reopens closed tabs." />
+  <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/kvault.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/docs.css" />
+</head>
+<body>
+  <nav class="topnav"></nav>
+
+  <div class="docs-shell">
+    <aside class="sidebar"></aside>
+
+    <main class="content">
+      <header class="page-header">
+        <p class="eyebrow">Features</p>
+        <h1>Tabs & Navigation</h1>
+        <p class="lede">
+          Browse namespaces and keys in a tabbed interface. Preview tabs auto-replace as you navigate, pin to keep, and reopen closed tabs with Cmd+Shift+T.
+        </p>
+      </header>
+
+      <section>
+        <h2>Overview</h2>
+        <p>
+          KVault's tab model is borrowed from VS Code and editors like it.
+          Clicking a key opens it as a <strong>preview</strong> tab — shown in
+          italics — which gets replaced when you click the next key. This
+          keeps casual browsing from turning into 40 open tabs. Double-click
+          or pin a preview to promote it to a regular tab that sticks around.
+        </p>
+        <p>
+          Tabs aren't just for keys. Namespaces, settings, the welcome
+          screen, import/export dialogs — anything that has a distinct view
+          is a tab type. Dirty tabs (with unsaved <a href="monaco-editor.html">editor</a>
+          changes) show an indicator so you don't close work by accident.
+        </p>
+      </section>
+
+      <section>
+        <h2>How to use it</h2>
+        <ul>
+          <li><strong>Open a key as preview</strong> — single-click it in the key list.</li>
+          <li><strong>Promote a preview</strong> — double-click it, pin it, or start editing.</li>
+          <li><strong>Close a tab</strong> — middle-click, use the close button, or press <kbd>Cmd</kbd> <kbd>W</kbd>.</li>
+          <li><strong>Reopen a closed tab</strong> — <kbd>Cmd</kbd> <kbd>Shift</kbd> <kbd>T</kbd> brings back the most recently closed one.</li>
+          <li><strong>Quick open</strong> — <kbd>Cmd</kbd> <kbd>P</kbd> jumps to any namespace by name without leaving the keyboard.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Tips</h2>
+        <ul>
+          <li>Save your tab layout as part of a <a href="workspaces.html">workspace</a> to restore a full investigation on demand.</li>
+          <li>The <a href="command-palette.html">command palette</a> exposes every tab action, including "switch to tab" fuzzy matching.</li>
+          <li>Dirty tab indicators follow the <a href="themes.html">theme</a> accent, so they're always visible regardless of light/dark mode.</li>
+          <li>Pair with <a href="global-search.html">global search</a>: clicking a result opens it as a preview, so you can skim many matches without polluting the tab strip.</li>
+        </ul>
+      </section>
+
+      <nav class="page-nav">
+        <a href="ttl.html"><span class="label">Previous</span>TTL Visibility</a>
+        <a href="command-palette.html" class="next"><span class="label">Next</span>Command Palette</a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="../assets/docs.js"></script>
+</body>
+</html>

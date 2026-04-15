@@ -2,6 +2,7 @@ import type { ThemeDefinition } from './types';
 import catppuccinMocha from './catppuccin-mocha';
 import catppuccinLatte from './catppuccin-latte';
 import oneDarkPro from './one-dark-pro';
+import cursorDark from './cursor-dark';
 import dracula from './dracula';
 import nord from './nord';
 import githubLight from './github-light';
@@ -14,6 +15,7 @@ export type { ThemeDefinition } from './types';
 export const themes: ThemeDefinition[] = [
   catppuccinMocha,
   oneDarkPro,
+  cursorDark,
   dracula,
   nord,
   catppuccinLatte,

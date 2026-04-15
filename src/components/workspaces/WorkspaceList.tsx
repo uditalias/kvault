@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Plus, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { useWorkspaceStore, type Workspace } from '../../stores/workspaceStore';
-import { useLayoutStore } from '../../stores/layoutStore';
 import { useToastStore } from '../../stores/toastStore';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { ScrollArea } from '../ui/ScrollArea';
@@ -226,17 +225,6 @@ export default function WorkspaceList() {
           </div>
         )}
       </div></ScrollArea>
-
-      {/* Save Current as Workspace button */}
-      <div className="border-t border-[var(--border)] p-2">
-        <button
-          className="flex items-center gap-2 w-full px-2 py-1.5 text-[length:var(--font-size-sm)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)] rounded-sm transition-colors"
-          onClick={() => useLayoutStore.getState().setSaveWorkspaceDialogOpen(true)}
-        >
-          <Plus size={14} />
-          Save Current as Workspace
-        </button>
-      </div>
 
       {/* Context menu */}
       {contextMenu && (

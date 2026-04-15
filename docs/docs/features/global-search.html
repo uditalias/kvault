@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Global Search — KVault Docs</title>
+  <meta name="description" content="Search every key across every namespace and every Cloudflare account in one shot. Supports regex, case sensitivity, and whole-word matching." />
+  <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/kvault.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/docs.css" />
+</head>
+<body>
+  <nav class="topnav"></nav>
+
+  <div class="docs-shell">
+    <aside class="sidebar"></aside>
+
+    <main class="content">
+      <header class="page-header">
+        <p class="eyebrow">Features</p>
+        <h1>Global Search</h1>
+        <p class="lede">
+          Search across every namespace in every account at once. Toggle case sensitivity, whole-word matching, or full regex — results are grouped by namespace with match counts.
+        </p>
+      </header>
+
+      <section>
+        <h2>Overview</h2>
+        <p>
+          Global Search is KVault's answer to the question "which namespace is
+          that key in again?" Instead of opening namespaces one by one and
+          running a filter on each, you type once and KVault queries every
+          cached key across every connected account in parallel. Results come
+          back grouped by namespace, with per-namespace match counts so you can
+          see at a glance where the matches concentrate.
+        </p>
+        <p>
+          Because key names are cached locally in SQLite, the search is
+          effectively instant even across tens of thousands of keys. Nothing
+          hits the Cloudflare API during the search itself — values are fetched
+          on demand only when you click through to a specific key.
+        </p>
+        <figure>
+          <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/global-search.png" alt="Searching the substring 100101 across four namespaces with match counts per namespace" />
+          <figcaption>A single search substring matched across four namespaces, grouped with per-namespace counts.</figcaption>
+        </figure>
+      </section>
+
+      <section>
+        <h2>How to use it</h2>
+        <p>
+          Open global search from the <a href="command-palette.html">command
+          palette</a> or with its dedicated shortcut. Type your query — as you
+          type, KVault filters and re-groups the result list. Use the toggles
+          in the search bar to switch between:
+        </p>
+        <ul>
+          <li><strong>Plain text</strong> — substring match, case-insensitive by default.</li>
+          <li><strong>Case-sensitive</strong> — exact case matching.</li>
+          <li><strong>Whole word</strong> — token-boundary match, useful for short terms.</li>
+          <li><strong>Regex</strong> — full regular expression matching with standard syntax.</li>
+        </ul>
+        <p>
+          Click any result to open that key in a new tab; the namespace tab
+          opens alongside so you can keep browsing related keys. Results
+          remember the toggle state across sessions so your preferred mode is
+          always ready.
+        </p>
+      </section>
+
+      <section>
+        <h2>Tips</h2>
+        <ul>
+          <li>Combine with <a href="filters.html">advanced filters</a> on a specific namespace for a two-step drill-down: narrow across accounts with global search, then pivot into one namespace's filter bar.</li>
+          <li>Use regex mode for structured keys — e.g. <code>^user:\d+:session$</code> finds only session keys that match your naming convention.</li>
+          <li>If a namespace's results look stale, trigger a <a href="sync.html">background sync</a> to refresh its cached key names.</li>
+          <li>Prefer the keyboard? The <a href="command-palette.html">command palette</a> exposes every search action without leaving the home row.</li>
+        </ul>
+      </section>
+
+      <nav class="page-nav">
+        <a href="accounts.html"><span class="label">Previous</span>Multi-Account Management</a>
+        <a href="filters.html" class="next"><span class="label">Next</span>Advanced Filtering</a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="../assets/docs.js"></script>
+</body>
+</html>

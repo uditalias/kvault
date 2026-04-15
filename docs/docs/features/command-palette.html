@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Command Palette — KVault Docs</title>
+  <meta name="description" content="Press Cmd+K to reach every action — switch accounts, open namespaces, create keys, import, export, and manage workspaces without the mouse." />
+  <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/kvault.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/docs.css" />
+</head>
+<body>
+  <nav class="topnav"></nav>
+
+  <div class="docs-shell">
+    <aside class="sidebar"></aside>
+
+    <main class="content">
+      <header class="page-header">
+        <p class="eyebrow">Features</p>
+        <h1>Command Palette</h1>
+        <p class="lede">
+          Press Cmd+K to access every action: switch accounts, open namespaces, create keys, sync, import, export, and manage workspaces — all without the mouse.
+        </p>
+      </header>
+
+      <section>
+        <h2>Overview</h2>
+        <p>
+          The command palette is KVault's keyboard-first entry point to
+          everything. Press <kbd>Cmd</kbd> <kbd>K</kbd> from anywhere and a
+          fuzzy-matching palette opens with every action the app supports:
+          open a namespace, switch accounts, create a key, trigger a sync,
+          import or export, open settings, save a workspace, change the theme.
+          If it lives in a menu, it lives in the palette too.
+        </p>
+        <p>
+          The palette is backed by the same commands that menus and shortcuts
+          invoke, so nothing is palette-only and nothing is menu-only. Typing
+          narrows down the list; arrow keys move the selection; Enter runs the
+          command. The palette also remembers your recent commands and
+          promotes them to the top, so frequently used actions are always a
+          single keystroke away.
+        </p>
+      </section>
+
+      <section>
+        <h2>How to use it</h2>
+        <ul>
+          <li><strong>Open</strong> — <kbd>Cmd</kbd> <kbd>K</kbd> from any context.</li>
+          <li><strong>Search</strong> — fuzzy-matches command names and aliases (e.g. "export" finds both "Export to JSON" and "Export to CSV").</li>
+          <li><strong>Navigate</strong> — arrow keys to move, Enter to run, Escape to dismiss.</li>
+          <li><strong>Contextual commands</strong> — some commands only appear when they make sense (e.g. "Save current value" needs a dirty editor tab).</li>
+        </ul>
+        <p>
+          A few frequent workflows that live entirely in the palette:
+          triggering <a href="global-search.html">global search</a>, saving or
+          restoring a <a href="workspaces.html">workspace</a>, and opening
+          <a href="bulk-operations.html">bulk import</a> on a specific
+          namespace.
+        </p>
+      </section>
+
+      <section>
+        <h2>Tips</h2>
+        <ul>
+          <li>Prefer keyboard-first? Memorize <kbd>Cmd</kbd> <kbd>K</kbd> — every other shortcut can be discovered from there.</li>
+          <li>Command names are stable, so you can script muscle memory (e.g. <kbd>Cmd</kbd> <kbd>K</kbd>, type "sync", Enter) for a re-sync on the active namespace.</li>
+          <li>The palette is one of several <code>window</code>-level custom events under the hood (<code>kvault:open-command-palette</code>) — perfect for automation or custom bindings if you build from source.</li>
+          <li>See <a href="../shortcuts.html">Keyboard Shortcuts</a> for the rest of the bindings that bypass the palette.</li>
+        </ul>
+      </section>
+
+      <nav class="page-nav">
+        <a href="tabs.html"><span class="label">Previous</span>Tabs & Navigation</a>
+        <a href="sync.html" class="next"><span class="label">Next</span>Background Sync</a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="../assets/docs.js"></script>
+</body>
+</html>

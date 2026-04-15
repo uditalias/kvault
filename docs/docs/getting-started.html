@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Getting Started — KVault Docs</title>
+  <meta name="description" content="Connect your first Cloudflare account to KVault, browse namespaces, open keys, and edit values — your first five minutes with KVault." />
+  <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/kvault.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/docs.css" />
+</head>
+<body>
+  <nav class="topnav"></nav>
+
+  <div class="docs-shell">
+    <aside class="sidebar"></aside>
+
+    <main class="content">
+      <header class="page-header">
+        <p class="eyebrow">Getting Started</p>
+        <h1>Getting Started</h1>
+        <p class="lede">
+          Your first five minutes with KVault: create a Cloudflare API token,
+          add your account, and start browsing namespaces. Everything you edit
+          stays in sync with Cloudflare — nothing lives only on your machine.
+        </p>
+      </header>
+
+      <section>
+        <h2>Create a Cloudflare API token</h2>
+        <p>
+          KVault talks to the Cloudflare API on your behalf, so it needs a
+          token with permission to read and write Workers KV. Head to the
+          <a href="https://dash.cloudflare.com/profile/api-tokens">Cloudflare API Tokens page</a>
+          and click <strong>Create Token</strong>, then pick the
+          <strong>Create Custom Token</strong> template.
+        </p>
+        <p>Configure the token like this:</p>
+        <ul>
+          <li><strong>Required permission:</strong> <code>Account</code> → <code>Workers KV Storage</code> → <code>Edit</code>. This lets KVault list namespaces and read, write, and delete keys.</li>
+          <li><strong>Optional permission:</strong> <code>Account</code> → <code>Account Settings</code> → <code>Read</code>. Useful if you want KVault to show a friendlier account name.</li>
+          <li><strong>Account resources:</strong> scope the token to the specific account(s) you want KVault to see — not <em>All accounts</em> — so the token's blast radius matches its job.</li>
+        </ul>
+        <p>
+          Click <strong>Continue to summary</strong>, then <strong>Create Token</strong>,
+          and copy the value. Cloudflare will only show it once.
+        </p>
+      </section>
+
+      <section>
+        <h2>Add the account in KVault</h2>
+        <p>
+          Open KVault. Press
+          <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd>
+          (or click <strong>Add Account</strong> in the sidebar) to open the
+          account dialog. Give the account a friendly name — this is how it
+          will appear in KVault's sidebar — and paste the token you just
+          copied.
+        </p>
+        <p>
+          KVault validates the token against the Cloudflare API and, on
+          success, pulls the list of namespaces for the account. You'll see
+          them appear under the account name immediately.
+        </p>
+
+        <div class="callout info">
+          <strong>Tokens are stored in your OS keychain.</strong> KVault hands
+          the token to macOS Keychain, Windows Credential Manager, or the
+          Linux Secret Service — never to SQLite, and never in plaintext on
+          disk. The local database only stores the account's metadata; the
+          token is retrieved by account id at call time.
+        </div>
+      </section>
+
+      <section>
+        <h2>Browse a namespace</h2>
+        <p>
+          Click an account in the sidebar to expand it and reveal its
+          namespaces. Click any namespace to open it as a tab. KVault starts
+          syncing that namespace's key names in the background — you'll see a
+          progress indicator as keys stream in.
+        </p>
+        <p>
+          Key <em>names</em> are cached locally in SQLite so that listing,
+          filtering, and search stay instant and work offline. Key
+          <em>values</em> are always fetched on-demand from Cloudflare when
+          you open a key, so what you see is always fresh.
+        </p>
+
+        <figure>
+          <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/welcome.png" alt="KVault welcome screen with the account sidebar and an open namespace tab." />
+          <figcaption>KVault on first launch — add an account in the sidebar to get started.</figcaption>
+        </figure>
+      </section>
+
+      <section>
+        <h2>Open a key</h2>
+        <p>
+          Click any key in the list to open it in the editor. A single click
+          opens the key as a <strong>preview tab</strong> — the italicized tab
+          is reused when you click the next key, so you don't end up with
+          dozens of tabs while you browse.
+        </p>
+        <p>
+          To keep a key open, <strong>double-click</strong> it in the list, or
+          drag the preview tab to pin it as a permanent tab. Permanent tabs
+          stay put until you close them.
+        </p>
+      </section>
+
+      <section>
+        <h2>Edit a value</h2>
+        <p>
+          The Monaco editor is a full-featured text editor — type, paste, or
+          format as you would in VS Code. The moment a value is dirty, KVault
+          shows a dot on the tab title so you know there are unsaved changes.
+        </p>
+        <p>
+          Save with <kbd>Cmd</kbd>+<kbd>S</kbd>. KVault writes the value to
+          Cloudflare and clears the dirty indicator. If the write fails (a
+          network blip, a revoked token), the tab stays dirty and you can
+          retry.
+        </p>
+      </section>
+
+      <section>
+        <h2>Where to next</h2>
+        <ul class="card-list">
+          <li>
+            <a href="features/command-palette.html">
+              <strong>Command Palette</strong>
+              <span>Jump to any account, namespace, or action from the keyboard.</span>
+            </a>
+          </li>
+          <li>
+            <a href="features/global-search.html">
+              <strong>Global Search</strong>
+              <span>Search keys across every namespace in every account at once.</span>
+            </a>
+          </li>
+          <li>
+            <a href="features/workspaces.html">
+              <strong>Workspaces</strong>
+              <span>Save a set of tabs and restore it later — perfect for per-project contexts.</span>
+            </a>
+          </li>
+          <li>
+            <a href="shortcuts.html">
+              <strong>Keyboard Shortcuts</strong>
+              <span>The full reference, on one page.</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <nav class="page-nav">
+        <a href="installation.html">
+          <span class="label">← Previous</span>
+          Installation
+        </a>
+        <a href="shortcuts.html" class="next">
+          <span class="label">Next →</span>
+          Keyboard Shortcuts
+        </a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="assets/docs.js"></script>
+</body>
+</html>

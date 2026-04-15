@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FAQ &amp; Troubleshooting — KVault Docs</title>
+  <meta name="description" content="Answers to common KVault questions and fixes for platform issues — Gatekeeper, SmartScreen, Ubuntu 25.10 WebKit, token validation, sync, and data storage." />
+  <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/kvault.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/docs.css" />
+</head>
+<body>
+  <nav class="topnav"></nav>
+
+  <div class="docs-shell">
+    <aside class="sidebar"></aside>
+
+    <main class="content">
+      <header class="page-header">
+        <p class="eyebrow">Help</p>
+        <h1>FAQ &amp; Troubleshooting</h1>
+        <p class="lede">
+          Stuck on install, sync, or wondering where your data lives? Jump to
+          the question that matches your issue — each answer links back to the
+          deeper reference page when one exists.
+        </p>
+      </header>
+
+      <section>
+        <h2>&ldquo;KVault can&rsquo;t be opened&rdquo; on macOS</h2>
+        <p>
+          macOS Gatekeeper blocks unsigned apps on first launch. KVault is not
+          yet notarized, so you&rsquo;ll see this warning the first time you
+          open it. See the
+          <a href="installation.html#macos">Installation page&rsquo;s Gatekeeper section</a>
+          for the full walkthrough.
+        </p>
+        <p>
+          The quick fix: right-click the KVault app in <code>/Applications</code>
+          and choose <strong>Open</strong> from the context menu, then confirm.
+          If that still fails, strip the quarantine attribute from Terminal:
+        </p>
+        <pre><code>xattr -dr com.apple.quarantine /Applications/KVault.app</code></pre>
+      </section>
+
+      <section>
+        <h2>Windows SmartScreen blocks the installer</h2>
+        <p>
+          Windows Defender SmartScreen flags unsigned installers with a blue
+          &ldquo;Windows protected your PC&rdquo; dialog. See the
+          <a href="installation.html#windows">Installation page&rsquo;s SmartScreen section</a>
+          for details.
+        </p>
+        <p>
+          To proceed, click <strong>More info</strong> on the dialog, then the
+          <strong>Run anyway</strong> button that appears. The installer will
+          then run normally.
+        </p>
+      </section>
+
+      <section>
+        <h2>App won&rsquo;t start on Ubuntu 25.10+</h2>
+        <p>
+          Ubuntu 25.10 removed <code>libwebkit2gtk-4.1-0</code> from its
+          repositories, which is the WebKit runtime Tauri 2 currently depends
+          on. Without it, KVault&rsquo;s window will never open. See the
+          <a href="installation.html#linux">Installation page&rsquo;s Linux section</a>
+          for a full breakdown.
+        </p>
+        <p>Until Tauri completes its GTK4 / WebKit migration, the options are:</p>
+        <ul>
+          <li>Run KVault inside an Ubuntu 24.04 LTS VM or container that still ships the required WebKit package.</li>
+          <li>Stay on Ubuntu 24.04 LTS on the host until the upstream migration lands.</li>
+          <li>Wait for a future KVault release built against the newer Tauri WebKit stack.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Token validation fails</h2>
+        <p>
+          If KVault rejects your Cloudflare API token when adding an account,
+          walk through this checklist:
+        </p>
+        <ul>
+          <li>The token must include the <strong>Account → Workers KV Storage → Edit</strong> permission. Read-only scopes are not enough — KVault needs Edit to write values and manage keys.</li>
+          <li>The token must not be expired. Cloudflare tokens can have an explicit TTL; check the token&rsquo;s configuration in the Cloudflare dashboard.</li>
+          <li>The token&rsquo;s <strong>Account Resources</strong> scope must include the account you&rsquo;re trying to add. A token scoped to only one account can&rsquo;t be used for another.</li>
+        </ul>
+        <p>
+          When in doubt, generate a fresh token from the Cloudflare dashboard
+          with the correct permissions and try again.
+        </p>
+      </section>
+
+      <section>
+        <h2>Namespace sync seems stuck</h2>
+        <p>
+          If a namespace&rsquo;s key list never finishes loading or appears
+          frozen mid-sync, try these in order:
+        </p>
+        <ul>
+          <li>Force a re-sync with <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>, or right-click the namespace in the sidebar and choose <strong>Re-sync</strong>.</li>
+          <li>Check your network connectivity — KVault needs to reach <code>api.cloudflare.com</code> to paginate through keys.</li>
+          <li>Verify the account&rsquo;s token still has access to the namespace&rsquo;s parent account (see token validation above).</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Where are my API tokens stored?</h2>
+        <p>
+          Cloudflare API tokens live only in your operating system&rsquo;s
+          secure credential store — <strong>macOS Keychain</strong>,
+          <strong>Windows Credential Manager</strong>, or the
+          <strong>Linux Secret Service</strong> (GNOME Keyring / KWallet).
+          They are never written to KVault&rsquo;s SQLite database or to disk in
+          plaintext. The <code>accounts</code> row keeps only the account
+          metadata; the token is retrieved by account id at call time.
+        </p>
+        <p>
+          When you delete an account inside KVault, the associated keychain
+          entry is removed in the same step.
+        </p>
+      </section>
+
+      <section>
+        <h2>Where is local data stored?</h2>
+        <p>
+          KVault writes its SQLite cache and workspace state to your
+          OS&rsquo;s standard app-data directory:
+        </p>
+        <ul>
+          <li><strong>macOS:</strong> <code>~/Library/Application Support/com.kvault.app/</code></li>
+          <li><strong>Windows:</strong> <code>%APPDATA%\com.kvault.app\</code></li>
+          <li><strong>Linux:</strong> <code>~/.local/share/com.kvault.app/</code></li>
+        </ul>
+        <p>
+          This directory contains the SQLite key-name cache and your saved
+          workspace layout — no KV values and no secrets. Deleting it resets
+          the local cache; your Cloudflare data is untouched.
+        </p>
+      </section>
+
+      <section>
+        <h2>Are KV values cached locally?</h2>
+        <p>
+          No. Only key <em>names</em> are cached locally, which is what makes
+          filtering and search feel instant even for large namespaces. Every
+          time you open a key, its value is fetched fresh from the Cloudflare
+          API — there is no value cache to go stale, and closing KVault leaves
+          no value data behind.
+        </p>
+      </section>
+
+      <section>
+        <h2>Can I edit binary values?</h2>
+        <p>
+          Not in v1. When a value is non-text, KVault renders it in a read-only
+          hex viewer so you can inspect bytes without risk of corrupting the
+          value. Binary editing is on the roadmap.
+        </p>
+        <p>
+          Text and JSON values can be edited freely in the Monaco editor, with
+          syntax highlighting, multiple cursors, and the rest of Monaco&rsquo;s
+          feature set.
+        </p>
+      </section>
+
+      <section>
+        <h2>How do I report a bug or request a feature?</h2>
+        <p>
+          Open an issue at
+          <a href="https://github.com/uditalias/kvault/issues">github.com/uditalias/kvault/issues</a>.
+          Please include:
+        </p>
+        <ul>
+          <li>Your operating system and version.</li>
+          <li>Your KVault version (visible in <strong>Settings</strong>).</li>
+          <li>Clear steps to reproduce, plus the expected vs. actual behavior.</li>
+        </ul>
+        <p>
+          Feature requests are welcome in the same tracker — label them
+          accordingly and describe the workflow you&rsquo;re trying to unblock.
+        </p>
+      </section>
+
+      <nav class="page-nav">
+        <a href="build-from-source.html" class="prev">
+          <span class="label">Previous</span>
+          ← Build from Source
+        </a>
+        <a href="https://github.com/uditalias/kvault/issues" class="next">
+          <span class="label">Help</span>
+          Open an issue →
+        </a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="assets/docs.js"></script>
+</body>
+</html>

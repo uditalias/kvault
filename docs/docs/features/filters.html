@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced Filtering — KVault Docs</title>
+  <meta name="description" content="Each namespace gets its own filter bar with real-time results, saved named filters, and plain/case-sensitive/whole-word/regex modes." />
+  <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/kvault.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/docs.css" />
+</head>
+<body>
+  <nav class="topnav"></nav>
+
+  <div class="docs-shell">
+    <aside class="sidebar"></aside>
+
+    <main class="content">
+      <header class="page-header">
+        <p class="eyebrow">Features</p>
+        <h1>Advanced Filtering</h1>
+        <p class="lede">
+          Each namespace gets its own filter bar with real-time results, saved named filters, and plain, case-sensitive, whole-word, or regex modes.
+        </p>
+      </header>
+
+      <section>
+        <h2>Overview</h2>
+        <p>
+          While <a href="global-search.html">global search</a> spans every
+          namespace, advanced filtering is a per-namespace tool for slicing a
+          single key list. Every namespace tab has its own filter bar that
+          filters the cached key names as you type, with zero network calls.
+          Filters can be saved by name and recalled instantly, which is
+          perfect for common views like <code>only user sessions</code> or
+          <code>feature flags in the promo-* namespace</code>.
+        </p>
+        <p>
+          Filters are independent per namespace, so switching between tabs
+          doesn't clobber your state. Each filter remembers its mode (plain,
+          case-sensitive, whole-word, or regex) separately, so you can run a
+          regex over one namespace while a plain substring runs over another.
+        </p>
+      </section>
+
+      <section>
+        <h2>How to use it</h2>
+        <p>
+          Focus the filter bar with <kbd>Cmd</kbd> <kbd>F</kbd> and start
+          typing. Results narrow in real time. Toggle the mode icons on the
+          right of the filter bar to switch matching modes — the cog icon opens
+          the saved-filters dropdown.
+        </p>
+        <ul>
+          <li><strong>Save a filter</strong> — open the saved-filters menu and click "Save as…". Give it a name; it sticks around forever, scoped to that namespace.</li>
+          <li><strong>Recall a saved filter</strong> — pick it from the menu; the filter bar and mode update instantly.</li>
+          <li><strong>Combine with selection</strong> — once the list is narrowed, shift-click to range-select and hand off to <a href="bulk-operations.html">bulk operations</a>.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Tips</h2>
+        <ul>
+          <li>Regex mode uses standard JS regex — escape dots (<code>\.</code>) when you mean literal dots.</li>
+          <li>Saved filters are part of a <a href="workspaces.html">workspace</a>, so a named session can restore specific filters in specific namespaces.</li>
+          <li>For cross-namespace filtering, lean on <a href="global-search.html">global search</a> instead — filters are scoped to a single namespace by design.</li>
+          <li>Filter state persists across tab close/reopen and across app restarts, so a mid-investigation filter survives a crash.</li>
+        </ul>
+      </section>
+
+      <nav class="page-nav">
+        <a href="global-search.html"><span class="label">Previous</span>Global Search</a>
+        <a href="monaco-editor.html" class="next"><span class="label">Next</span>Monaco Editor</a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="../assets/docs.js"></script>
+</body>
+</html>

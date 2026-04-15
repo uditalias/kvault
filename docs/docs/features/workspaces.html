@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workspaces — KVault Docs</title>
+  <meta name="description" content="Save a complete session — open tabs, active filters, sidebar state — as a named workspace. Restore it exactly tomorrow." />
+  <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/kvault.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/docs.css" />
+</head>
+<body>
+  <nav class="topnav"></nav>
+
+  <div class="docs-shell">
+    <aside class="sidebar"></aside>
+
+    <main class="content">
+      <header class="page-header">
+        <p class="eyebrow">Features</p>
+        <h1>Workspaces</h1>
+        <p class="lede">
+          Save your entire session — open tabs, active filters, sidebar state — as a named workspace. Restore it tomorrow exactly where you left off.
+        </p>
+      </header>
+
+      <section>
+        <h2>Overview</h2>
+        <p>
+          Incidents don't fit in a single tab. When you're debugging across
+          two accounts, three namespaces, and a handful of specific keys,
+          you accumulate a layout — certain tabs open in a certain order,
+          specific filters active on specific namespaces, a sidebar expanded
+          to just the right branches. Workspaces capture that whole layout as
+          a named session you can save and restore.
+        </p>
+        <p>
+          A workspace snapshots: every open <a href="tabs.html">tab</a> and
+          its type, which tab is active, the active <a href="filters.html">filter</a>
+          in each namespace, which accounts and namespaces are expanded in
+          the sidebar, and any layout panel state. Nothing about values is
+          saved — values always come fresh from Cloudflare — only the view
+          that got you to them.
+        </p>
+      </section>
+
+      <section>
+        <h2>How to use it</h2>
+        <p>
+          Once your session looks the way you want, open the workspace menu
+          (or use the <a href="command-palette.html">command palette</a>) and
+          pick "Save workspace…". Give it a name. The saved workspace appears
+          in the workspaces list; click it any time to restore that exact
+          layout.
+        </p>
+        <ul>
+          <li><strong>Save</strong> — captures tabs, filters, sidebar state, and layout as a named session.</li>
+          <li><strong>Restore</strong> — replaces the current session with the saved layout; unsaved edits in open tabs are preserved where possible.</li>
+          <li><strong>Update</strong> — re-save on top of an existing workspace name to refresh the snapshot.</li>
+          <li><strong>Delete</strong> — remove workspaces you no longer need.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Tips</h2>
+        <ul>
+          <li>Use workspaces for long-running projects (<code>promo-launch</code>, <code>user-cleanup</code>) instead of for momentary views — the value is in the return visit.</li>
+          <li>Saved <a href="filters.html">filters</a> are part of the workspace, so a workspace can restore a specific filter in a specific namespace.</li>
+          <li>Combine with <a href="accounts.html">multiple accounts</a> — a single workspace can span prod and staging side-by-side.</li>
+          <li>Workspaces live locally in SQLite, so they move with the app, not with your Cloudflare account.</li>
+        </ul>
+      </section>
+
+      <nav class="page-nav">
+        <a href="hex-viewer.html"><span class="label">Previous</span>Hex Viewer & Binary Support</a>
+        <a href="bulk-operations.html" class="next"><span class="label">Next</span>Bulk Operations</a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="../assets/docs.js"></script>
+</body>
+</html>
