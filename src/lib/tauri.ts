@@ -75,8 +75,40 @@ export interface SyncErrorEvent {
 
 // === Account Commands ===
 
-export const addAccount = (name: string, cfAccountId: string, apiToken: string) =>
-  invoke<Account>('add_account', { name, cfAccountId, apiToken });
+export class AppError extends Error {
+  code: string;
+  details?: Record<string, unknown>;
+  constructor(code: string, message: string, details?: Record<string, unknown>) {
+    super(message);
+    this.name = 'AppError';
+    this.code = code;
+    this.details = details;
+  }
+}
+
+function toAppError(err: unknown, fallback = 'Unexpected error'): Error {
+  if (err instanceof Error) return err;
+  if (typeof err === 'string') return new Error(err);
+  if (err && typeof err === 'object') {
+    const obj = err as Record<string, unknown>;
+    if (typeof obj.code === 'string' && typeof obj.message === 'string') {
+      return new AppError(
+        obj.code,
+        obj.message,
+        obj.details as Record<string, unknown> | undefined,
+      );
+    }
+  }
+  return new Error(fallback);
+}
+
+export const addAccount = async (name: string, cfAccountId: string, apiToken: string) => {
+  try {
+    return await invoke<Account>('add_account', { name, cfAccountId, apiToken });
+  } catch (err) {
+    throw toAppError(err, 'Failed to add account');
+  }
+};
 
 export const listAccounts = () =>
   invoke<Account[]>('list_accounts');

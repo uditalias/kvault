@@ -312,7 +312,7 @@
     .hero .platforms span { color: var(--fg-muted); margin: 0 10px; }
 
     /* =========================
-       PRODUCT HERO SHOT
+       PRODUCT STORY SLIDESHOW
        ========================= */
     .product {
       max-width: var(--page-max);
@@ -334,29 +334,187 @@
       z-index: 0;
     }
 
-    .product .frame {
+    .story {
       position: relative;
       z-index: 1;
+    }
+
+    .story-stage {
+      position: relative;
       border: 1px solid var(--border);
       border-radius: 12px;
       overflow: hidden;
+      background: var(--bg-raised);
       box-shadow:
         0 1px 0 rgba(255, 255, 255, 0.04) inset,
         0 30px 60px -20px rgba(0, 0, 0, 0.7),
         0 80px 140px -40px rgba(0, 0, 0, 0.5);
-      background: var(--bg-raised);
+      aspect-ratio: 16 / 10;
     }
-    .product .frame img { width: 100%; display: block; }
 
-    .product .caption {
-      margin-top: 20px;
-      text-align: center;
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--fg-dim);
-      letter-spacing: 0.04em;
+    .story-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 700ms var(--ease), transform 900ms var(--ease);
+      transform: scale(1.015);
     }
-    .product .caption span { color: var(--fg-muted); }
+    .story-slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+    }
+    .story-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+    }
+
+    /* Caption overlay — sits at the bottom of every slide */
+    .story-slide .caption {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 60px 36px 28px;
+      background: linear-gradient(
+        to top,
+        rgba(10, 10, 11, 0.92) 0%,
+        rgba(10, 10, 11, 0.78) 45%,
+        rgba(10, 10, 11, 0) 100%
+      );
+      pointer-events: none;
+    }
+    .story-slide .step {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+      display: inline-block;
+    }
+    .story-slide .step .num {
+      color: var(--fg-dim);
+      margin-right: 10px;
+    }
+    .story-slide h3 {
+      font-family: var(--sans);
+      font-weight: 400;
+      font-size: clamp(1.25rem, 2.4vw, 1.9rem);
+      letter-spacing: -0.02em;
+      color: var(--fg);
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .story-slide h3 .accent { color: var(--accent); font-weight: 500; }
+    .story-slide p {
+      font-size: 14.5px;
+      color: var(--fg-muted);
+      max-width: 640px;
+      line-height: 1.55;
+    }
+
+    /* Arrow controls */
+    .story-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid var(--border-strong);
+      background: rgba(10, 10, 11, 0.7);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color: var(--fg);
+      font-family: var(--mono);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 180ms var(--ease), border-color 180ms var(--ease), transform 180ms var(--ease);
+      z-index: 4;
+      opacity: 0;
+    }
+    .story:hover .story-arrow,
+    .story-arrow:focus-visible { opacity: 1; }
+    .story-arrow:hover {
+      background: var(--bg-raised);
+      border-color: var(--fg-muted);
+      transform: translateY(-50%) scale(1.05);
+    }
+    .story-arrow.prev { left: 16px; }
+    .story-arrow.next { right: 16px; }
+
+    /* Dots + step counter */
+    .story-controls {
+      margin-top: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+    }
+    .story-dots {
+      display: flex;
+      gap: 8px;
+    }
+    .story-dot {
+      position: relative;
+      width: 28px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border-strong);
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      overflow: hidden;
+      transition: background 200ms var(--ease), width 240ms var(--ease);
+    }
+    .story-dot:hover { background: var(--fg-dim); }
+    .story-dot.active {
+      width: 44px;
+    }
+    .story-dot .fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+    .story-dot.active .fill.run {
+      animation: story-tick var(--story-duration, 6s) linear forwards;
+    }
+    .story-dot.done .fill {
+      width: 100%;
+    }
+    @keyframes story-tick {
+      from { width: 0%; }
+      to   { width: 100%; }
+    }
+    .story-counter {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--fg-dim);
+      letter-spacing: 0.08em;
+      min-width: 56px;
+      text-align: center;
+    }
+    .story-counter .now { color: var(--fg); }
+
+    @media (max-width: 600px) {
+      .story-stage { aspect-ratio: 4 / 3; }
+      .story-slide .caption { padding: 50px 20px 22px; }
+      .story-arrow { width: 38px; height: 38px; opacity: 1; }
+      .story-arrow.prev { left: 10px; }
+      .story-arrow.next { right: 10px; }
+    }
 
     /* =========================
        SECTION HEADER
@@ -665,14 +823,80 @@
     </div>
   </section>
 
-  <!-- PRODUCT SHOT -->
+  <!-- PRODUCT STORY SLIDESHOW -->
   <section class="product">
-    <div class="frame reveal d5">
-      <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/global-search.png"
-           alt="KVault — global search across every Cloudflare KV namespace, grouped by namespace with match counts" />
-    </div>
-    <div class="caption reveal d5">
-      ↑ Global search across every namespace, with regex and case modes. <span>Grouped. Instant.</span>
+    <div class="story reveal d5" id="story" aria-roledescription="carousel" aria-label="A walkthrough of KVault">
+      <div class="story-stage">
+        <article class="story-slide active" data-slide="0">
+          <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/welcome.png"
+               alt="KVault welcome screen — connect your first Cloudflare account" />
+          <div class="caption">
+            <span class="step"><span class="num">01 / start</span>Connect in seconds</span>
+            <h3>Drop in a token. <span class="accent">Pick an account.</span></h3>
+            <p>Paste your Cloudflare API token, and KVault loads every account, namespace, and key you have access to — no copy-pasting account IDs, no juggling dashboards.</p>
+          </div>
+        </article>
+
+        <article class="story-slide" data-slide="1">
+          <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/key-list-ttl.png"
+               alt="KVault key list with TTL badges shown inline next to each key" />
+          <div class="caption">
+            <span class="step"><span class="num">02 / browse</span>Every key, every namespace</span>
+            <h3>Filter, sort, and see <span class="accent">TTL at a glance</span>.</h3>
+            <p>Key names cache locally, so listing and filtering tens of thousands of keys is instant. Each row shows TTL inline — <code style="font-family:var(--mono);color:var(--fg);font-size:12px;">5d</code>, <code style="font-family:var(--mono);color:var(--fg);font-size:12px;">2h</code>, or <code style="font-family:var(--mono);color:var(--fg);font-size:12px;">expired</code> — no extra round-trip required.</p>
+          </div>
+        </article>
+
+        <article class="story-slide" data-slide="2">
+          <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/monaco-editor.png"
+               alt="KVault Monaco editor showing a JSON value with syntax highlighting" />
+          <div class="caption">
+            <span class="step"><span class="num">03 / edit</span>The editor you already know</span>
+            <h3>A real <span class="accent">Monaco</span> editor — the one inside VS Code.</h3>
+            <p>JSON gets auto-detected and syntax-highlighted. Format on demand. Theme it to match your terminal. Binary values fall back to a hex viewer with an ASCII column.</p>
+          </div>
+        </article>
+
+        <article class="story-slide" data-slide="3">
+          <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/editing-value.png"
+               alt="An edited KV value with the dirty indicator showing unsaved changes" />
+          <div class="caption">
+            <span class="step"><span class="num">04 / save</span>Dirty state, tracked</span>
+            <h3>Make changes. Hit <span class="accent">⌘S</span>. Done.</h3>
+            <p>KVault tracks unsaved edits per tab and warns before you lose work. Saved values round-trip back to Cloudflare and the local cache stays in sync.</p>
+          </div>
+        </article>
+
+        <article class="story-slide" data-slide="4">
+          <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/create-key-dialog.png"
+               alt="KVault create key dialog with name, value, and TTL fields" />
+          <div class="caption">
+            <span class="step"><span class="num">05 / create</span>Without leaving the keyboard</span>
+            <h3>Create keys with <span class="accent">⌘N</span> — TTL, JSON, anything.</h3>
+            <p>Inline validation, optional TTL, paste a JSON blob and KVault formats it for you. The new key shows up in the list the moment Cloudflare confirms.</p>
+          </div>
+        </article>
+
+        <article class="story-slide" data-slide="5">
+          <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/global-search.png"
+               alt="KVault global search results grouped by namespace with match counts" />
+          <div class="caption">
+            <span class="step"><span class="num">06 / search</span>Across everything, at once</span>
+            <h3>One query. <span class="accent">Every account.</span> Every namespace.</h3>
+            <p>Plain, case-sensitive, whole-word, or full regex. Results group by namespace with match counts so you can jump straight to what you need — the thing the dashboard refuses to do.</p>
+          </div>
+        </article>
+
+        <button class="story-arrow prev" id="story-prev" aria-label="Previous slide" type="button">‹</button>
+        <button class="story-arrow next" id="story-next" aria-label="Next slide" type="button">›</button>
+      </div>
+
+      <div class="story-controls">
+        <div class="story-dots" id="story-dots" role="tablist" aria-label="Choose a slide"></div>
+        <div class="story-counter" aria-live="polite">
+          <span class="now" id="story-now">01</span> <span>/ 06</span>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -831,6 +1055,131 @@
     const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 12);
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
+
+    // Product story slideshow
+    (() => {
+      const story = document.getElementById('story');
+      if (!story) return;
+      const slides = Array.from(story.querySelectorAll('.story-slide'));
+      const dotsEl = document.getElementById('story-dots');
+      const nowEl = document.getElementById('story-now');
+      const prev = document.getElementById('story-prev');
+      const next = document.getElementById('story-next');
+
+      const DURATION = 6500; // ms per slide
+      story.style.setProperty('--story-duration', DURATION + 'ms');
+
+      let idx = 0;
+      let timer = null;
+      let paused = false;
+
+      // Build dots — each contains a .fill that animates the autoplay tick
+      slides.forEach((_, i) => {
+        const b = document.createElement('button');
+        b.className = 'story-dot' + (i === 0 ? ' active' : '');
+        b.type = 'button';
+        b.setAttribute('role', 'tab');
+        b.setAttribute('aria-label', `Go to slide ${i + 1}`);
+        const fill = document.createElement('span');
+        fill.className = 'fill';
+        b.appendChild(fill);
+        b.addEventListener('click', () => go(i, true));
+        dotsEl.appendChild(b);
+      });
+      const dots = Array.from(dotsEl.children);
+      const fillOf = (i) => dots[i].querySelector('.fill');
+
+      const resetFills = () => {
+        dots.forEach((d, i) => {
+          const f = fillOf(i);
+          f.classList.remove('run');
+          // Clear any inline styles left over from pause/resume
+          f.style.transition = '';
+          f.style.width = '';
+          d.classList.toggle('done', i < idx);
+        });
+      };
+
+      const startActiveFill = () => {
+        const f = fillOf(idx);
+        f.classList.remove('run');
+        // force reflow so the animation restarts
+        void f.offsetWidth;
+        if (!paused) f.classList.add('run');
+      };
+
+      const schedule = () => {
+        clearTimeout(timer);
+        if (paused) return;
+        timer = setTimeout(() => go(idx + 1), DURATION);
+      };
+
+      const go = (n, manual = false) => {
+        idx = (n + slides.length) % slides.length;
+        slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+        nowEl.textContent = String(idx + 1).padStart(2, '0');
+        resetFills();
+        startActiveFill();
+        schedule();
+      };
+
+      prev.addEventListener('click', () => go(idx - 1, true));
+      next.addEventListener('click', () => go(idx + 1, true));
+
+      // Pause on hover / focus — freeze the fill mid-animation
+      const pause = () => {
+        paused = true;
+        clearTimeout(timer);
+        const f = fillOf(idx);
+        const w = getComputedStyle(f).width;
+        f.classList.remove('run');
+        f.style.width = w;
+      };
+      const resume = () => {
+        paused = false;
+        const f = fillOf(idx);
+        const stage = story.querySelector('.story-stage');
+        const total = stage ? stage.getBoundingClientRect().width : f.parentElement.getBoundingClientRect().width;
+        const cur = parseFloat(getComputedStyle(f).width) || 0;
+        const pct = total ? Math.min(1, cur / dots[idx].getBoundingClientRect().width) : 0;
+        const remaining = Math.max(0, DURATION * (1 - pct));
+        // restart from current width
+        f.style.transition = `width ${remaining}ms linear`;
+        // force reflow then animate to 100%
+        void f.offsetWidth;
+        f.style.width = '100%';
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          f.style.transition = '';
+          f.style.width = '';
+          go(idx + 1);
+        }, remaining);
+      };
+      story.addEventListener('mouseenter', pause);
+      story.addEventListener('mouseleave', resume);
+      story.addEventListener('focusin', pause);
+      story.addEventListener('focusout', resume);
+
+      // Pause when offscreen
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(entries => {
+          entries.forEach(e => e.isIntersecting ? resume() : pause());
+        }, { threshold: 0.25 });
+        io.observe(story);
+      }
+
+      // Keyboard
+      window.addEventListener('keydown', e => {
+        if (e.target.closest('input, textarea, [contenteditable]')) return;
+        if (e.key === 'ArrowLeft')  go(idx - 1, true);
+        if (e.key === 'ArrowRight') go(idx + 1, true);
+      });
+
+      // Kick off
+      startActiveFill();
+      schedule();
+    })();
 
     // Fetch latest release and fill in version-templated spots.
     // Falls back silently to the hardcoded version already in the DOM.

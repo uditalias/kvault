@@ -41,6 +41,14 @@ pub fn run() {
                     eprintln!("mock seed failed: {e}");
                 }
             }
+            // Release builds: purge any stale mock account left over from a
+            // previous dev-build install on the same machine.
+            #[cfg(not(debug_assertions))]
+            {
+                if let Err(e) = mock::purge(&conn) {
+                    eprintln!("mock purge failed: {e}");
+                }
+            }
 
             app.manage(AppDb(Mutex::new(conn)));
 

@@ -48,6 +48,29 @@ pub fn get_all_accounts(conn: &Connection) -> Result<Vec<Account>, rusqlite::Err
     rows.collect()
 }
 
+pub fn get_account_by_cloudflare_id(
+    conn: &Connection,
+    cloudflare_account_id: &str,
+) -> Result<Option<Account>, rusqlite::Error> {
+    let mut stmt = conn.prepare(
+        "SELECT id, name, cloudflare_account_id, created_at, updated_at FROM accounts WHERE cloudflare_account_id = ?1",
+    )?;
+    let mut rows = stmt.query_map(params![cloudflare_account_id], |row| {
+        Ok(Account {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            cloudflare_account_id: row.get(2)?,
+            created_at: row.get(3)?,
+            updated_at: row.get(4)?,
+        })
+    })?;
+
+    match rows.next() {
+        Some(row) => Ok(Some(row?)),
+        None => Ok(None),
+    }
+}
+
 pub fn get_account(conn: &Connection, id: &str) -> Result<Option<Account>, rusqlite::Error> {
     let mut stmt = conn.prepare(
         "SELECT id, name, cloudflare_account_id, created_at, updated_at FROM accounts WHERE id = ?1",

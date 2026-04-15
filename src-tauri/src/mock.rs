@@ -59,6 +59,17 @@ pub fn delete(namespace_id: &str, key_name: &str) {
     }
 }
 
+/// Remove the mock account (and cascade to namespaces/keys) if it exists.
+/// Called on startup in release builds so users who previously ran a dev
+/// build don't see the seeded mock account in their installed app.
+pub fn purge(conn: &Connection) -> Result<(), rusqlite::Error> {
+    conn.execute(
+        "DELETE FROM accounts WHERE id = ?1",
+        rusqlite::params![MOCK_ACCOUNT_ID],
+    )?;
+    Ok(())
+}
+
 // ── seeding ────────────────────────────────────────────────────────────────
 
 /// Insert the mock account/namespaces and fill the in-memory value map.

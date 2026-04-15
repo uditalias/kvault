@@ -1,3 +1,5 @@
+use serde::Serialize;
+use serde_json::json;
 use tauri::State;
 use uuid::Uuid;
 
@@ -6,31 +8,84 @@ use crate::db::accounts::{self, Account};
 use crate::keychain;
 use crate::AppDb;
 
+#[derive(Debug, Serialize)]
+pub struct AddAccountError {
+    pub code: String,
+    pub message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub details: Option<serde_json::Value>,
+}
+
+impl AddAccountError {
+    fn internal(message: impl Into<String>) -> Self {
+        Self {
+            code: "INTERNAL".into(),
+            message: message.into(),
+            details: None,
+        }
+    }
+}
+
 #[tauri::command]
 pub async fn add_account(
     db: State<'_, AppDb>,
     name: String,
     cf_account_id: String,
     api_token: String,
-) -> Result<Account, String> {
-    // Validate the token first
+) -> Result<Account, AddAccountError> {
+    // Reject duplicates up front
+    {
+        let conn = db
+            .0
+            .lock()
+            .map_err(|e| AddAccountError::internal(e.to_string()))?;
+        if let Some(existing) = accounts::get_account_by_cloudflare_id(&conn, &cf_account_id)
+            .map_err(|e| AddAccountError::internal(e.to_string()))?
+        {
+            return Err(AddAccountError {
+                code: "DUPLICATE_ACCOUNT".into(),
+                message: format!(
+                    "An account with Cloudflare ID \"{}\" already exists as \"{}\".",
+                    cf_account_id, existing.name
+                ),
+                details: Some(json!({
+                    "cloudflare_account_id": cf_account_id,
+                    "existing_account_id": existing.id,
+                    "existing_account_name": existing.name,
+                })),
+            });
+        }
+    }
+
+    // Validate the token
     let client = CloudflareClient::new(api_token.clone(), cf_account_id.clone());
-    let verify = client
-        .verify_token()
-        .await
-        .map_err(|e| format!("Token validation failed: {}", e))?;
+    let verify = client.verify_token().await.map_err(|e| AddAccountError {
+        code: "TOKEN_VALIDATION_FAILED".into(),
+        message: "Couldn't validate this token. Double-check the Cloudflare Account ID and API token.".into(),
+        details: Some(json!({ "cause": e.to_string() })),
+    })?;
     if verify.status != "active" {
-        return Err(format!("Token is not active (status: {})", verify.status));
+        return Err(AddAccountError {
+            code: "TOKEN_INACTIVE".into(),
+            message: format!("Token is not active (status: {})", verify.status),
+            details: Some(json!({ "status": verify.status })),
+        });
     }
 
     let id = Uuid::new_v4().to_string();
 
-    // Store token in keychain
-    keychain::store_token(&id, &api_token).map_err(|e| e.to_string())?;
-    // Create account in DB
-    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    keychain::store_token(&id, &api_token).map_err(|e| AddAccountError {
+        code: "KEYCHAIN_ERROR".into(),
+        message: e.to_string(),
+        details: None,
+    })?;
+
+    let conn = db
+        .0
+        .lock()
+        .map_err(|e| AddAccountError::internal(e.to_string()))?;
     let account = accounts::create_account(&conn, &id, &name, &cf_account_id)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| AddAccountError::internal(e.to_string()))?;
 
     Ok(account)
 }
