@@ -1,3 +1,12 @@
+## 0.0.5 (2026-04-15)
+
+- docs: update build from source link in index.html (da8a196)
+- docs: update README and documentation for new themes and navigation (c274f86)
+- feat: implement product story slideshow and enhance account error handling (578e40b)
+- release: v0.0.4 (021dc86)
+- docs: update README and add index.html for project documentation (92bb126)
+- docs: enhance README navigation with additional links (d160b5e)
+
 ## 0.0.4 (2026-04-14)
 
 - docs: update README and add index.html for project documentation (92bb126)
