@@ -1,6 +1,6 @@
 import type { Namespace, PlaygroundMode } from '../tauri';
 import * as api from '../tauri';
-import { buildIframeSrcdoc } from './runtime';
+import { buildWorkerScript } from './runtime';
 import { buildNamespaceIdentMap } from './envTypes';
 import { handleRpcRequest, type RpcContext } from './rpcHandler';
 import type { RuntimeMessage, RpcReply } from './rpcTypes';
@@ -36,20 +36,16 @@ async function getEsbuild(): Promise<EsbuildModule> {
   cache.promise = (async () => {
     const mod = (await import('esbuild-wasm')) as unknown as EsbuildModule;
     // Fetch + compile the WASM on the main thread rather than letting esbuild's
-    // internal Web Worker do it. Inside a blob: worker on Tauri's custom app
-    // scheme, the fetch can hang — pre-compiling here and passing the
-    // WebAssembly.Module skips the worker-side fetch path entirely.
+    // internal machinery do it. Tauri's production custom scheme under
+    // WKWebView silently hangs esbuild's worker path; running esbuild
+    // in-process with a pre-compiled Module avoids it. Content-Type from the
+    // scheme isn't always application/wasm so avoid compileStreaming.
     const res = await fetch(esbuildWasmUrl);
     if (!res.ok) throw new Error(`Failed to load esbuild wasm: ${res.status}`);
-    const wasmModule =
-      'compileStreaming' in WebAssembly
-        ? await WebAssembly.compileStreaming(res)
-        : await WebAssembly.compile(await res.arrayBuffer());
+    const wasmModule = await WebAssembly.compile(await res.arrayBuffer());
     try {
-      await mod.initialize({ wasmModule, worker: true });
+      await mod.initialize({ wasmModule, worker: false });
     } catch (err) {
-      // Defensive: another caller may have already initialized this WASM
-      // instance. Treat "already initialized" as success and proceed.
       const msg = err instanceof Error ? err.message : String(err);
       if (!/more than once/i.test(msg)) throw err;
     }
@@ -99,8 +95,10 @@ export class PlaygroundRun {
   readonly mode: PlaygroundMode;
   private readonly accountId: string;
   private readonly events: RunEvents;
-  private iframe: HTMLIFrameElement | null = null;
+  private worker: Worker | null = null;
+  private workerUrl: string | null = null;
   private messageListener: ((ev: MessageEvent) => void) | null = null;
+  private errorListener: ((ev: ErrorEvent) => void) | null = null;
   private teardownCalled = false;
   private status: RunStatus = 'idle';
 
@@ -147,23 +145,19 @@ export class PlaygroundRun {
       if (ident) bindings.push({ ident, namespaceId: ns.id });
     }
 
-    const srcdoc = buildIframeSrcdoc({
+    const workerScript = buildWorkerScript({
       transpiledCode: transpiled,
       bindings,
     });
 
-    // Create an off-screen iframe attached to the document so window.parent
-    // postMessages work.
-    const iframe = document.createElement('iframe');
-    iframe.setAttribute('sandbox', 'allow-scripts');
-    iframe.style.position = 'fixed';
-    iframe.style.left = '-10000px';
-    iframe.style.top = '-10000px';
-    iframe.style.width = '1px';
-    iframe.style.height = '1px';
-    iframe.style.border = '0';
-    iframe.srcdoc = srcdoc;
-    this.iframe = iframe;
+    // Worker-as-sandbox: blob: worker URL is allowed by our CSP
+    // (worker-src 'self' blob:). The worker has no DOM, no window, no
+    // __TAURI__ — the only escape is postMessage back to us.
+    const blob = new Blob([workerScript], { type: 'text/javascript' });
+    const workerUrl = URL.createObjectURL(blob);
+    const worker = new Worker(workerUrl);
+    this.worker = worker;
+    this.workerUrl = workerUrl;
 
     const rpcCtx: RpcContext = {
       runId: this.runId,
@@ -172,7 +166,6 @@ export class PlaygroundRun {
     };
 
     const listener = async (ev: MessageEvent) => {
-      if (!iframe.contentWindow || ev.source !== iframe.contentWindow) return;
       const msg = ev.data as RuntimeMessage;
       if (!msg || typeof msg !== 'object') return;
       if (msg.kind === 'ready') {
@@ -207,16 +200,25 @@ export class PlaygroundRun {
           reply.ok = false;
           reply.error = err instanceof Error ? err.message : String(err);
         }
-        // Iframe may have been torn down while we awaited Rust.
-        if (!this.teardownCalled && iframe.contentWindow) {
-          iframe.contentWindow.postMessage(reply, '*');
+        if (!this.teardownCalled && this.worker) {
+          this.worker.postMessage(reply);
         }
       }
     };
     this.messageListener = listener;
-    window.addEventListener('message', listener);
+    worker.addEventListener('message', listener);
 
-    document.body.appendChild(iframe);
+    // Surface uncaught worker errors (syntax errors, thrown-but-unhandled,
+    // etc.) so the user gets a real message instead of a silent hang.
+    const onError = (ev: ErrorEvent) => {
+      if (this.teardownCalled) return;
+      const msg = ev.message || 'Uncaught worker error';
+      this.events.onError(msg);
+      this.setStatus('error');
+      void this.cleanup();
+    };
+    this.errorListener = onError;
+    worker.addEventListener('error', onError);
   }
 
   async cancel(): Promise<void> {
@@ -237,22 +239,34 @@ export class PlaygroundRun {
   private async cleanup(): Promise<void> {
     if (this.teardownCalled) return;
     this.teardownCalled = true;
-    if (this.messageListener) {
-      window.removeEventListener('message', this.messageListener);
-      this.messageListener = null;
+    if (this.worker) {
+      try {
+        this.worker.postMessage({ kind: 'teardown' });
+      } catch {
+        // ignore
+      }
+      if (this.messageListener) {
+        this.worker.removeEventListener('message', this.messageListener);
+      }
+      if (this.errorListener) {
+        this.worker.removeEventListener('error', this.errorListener);
+      }
+      try {
+        this.worker.terminate();
+      } catch {
+        // ignore
+      }
+      this.worker = null;
     }
-    if (this.iframe) {
+    this.messageListener = null;
+    this.errorListener = null;
+    if (this.workerUrl) {
       try {
-        this.iframe.contentWindow?.postMessage({ kind: 'teardown' }, '*');
+        URL.revokeObjectURL(this.workerUrl);
       } catch {
         // ignore
       }
-      try {
-        this.iframe.remove();
-      } catch {
-        // ignore
-      }
-      this.iframe = null;
+      this.workerUrl = null;
     }
     // Let Rust drop the cancellation token from its registry.
     try {

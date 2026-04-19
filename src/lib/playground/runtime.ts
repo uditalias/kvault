@@ -1,6 +1,8 @@
-// Builds the sandboxed iframe srcdoc that runs user scripts. The iframe has
-// no network access (no fetch/XHR/WebSocket — all shadowed to throw) and no
-// DOM/storage access. The ONLY way it can reach Cloudflare is via the
+// Builds the Web Worker script that runs user scripts in a sandbox. A Worker
+// is the isolation boundary here (no DOM, no window, no __TAURI__), not a
+// sandboxed iframe — iframe srcdoc inherits the parent's CSP and Tauri's
+// auto-injected sha hashes neutralize 'unsafe-inline', which blocked the
+// iframe's bootstrap in production. The only way out of the Worker is the
 // KVNamespace wrappers, which postMessage the parent, which invokes Rust.
 
 export interface RuntimeBuildOptions {
@@ -41,22 +43,10 @@ const SHADOWED_GLOBALS = [
  * format setting, but `require` we stub explicitly. */
 const SHADOWED_CALLS = ['require'];
 
-export function buildIframeSrcdoc(opts: RuntimeBuildOptions): string {
+export function buildWorkerScript(opts: RuntimeBuildOptions): string {
   const bindingsJson = JSON.stringify(opts.bindings);
 
-  // Every single string inside <script> must avoid closing </script>. We
-  // template with an inline IIFE that reads data from a JSON script tag.
-  return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline';">
-<title>KVault Playground Sandbox</title>
-</head>
-<body>
-<script id="kvault-bindings" type="application/json">${escapeForScriptTag(bindingsJson)}</script>
-<script>
-(function () {
+  return `(function () {
   'use strict';
   var SANDBOX_ERROR_PREFIX = ${JSON.stringify(SANDBOX_ERROR_PREFIX)};
   var LEARN_MORE_URL = ${JSON.stringify(LEARN_MORE_URL)};
@@ -65,28 +55,22 @@ export function buildIframeSrcdoc(opts: RuntimeBuildOptions): string {
   var timerHandles = new Set();
 
   function send(msg) {
-    window.parent.postMessage(msg, '*');
+    self.postMessage(msg);
   }
 
   // --- console proxy ------------------------------------------------------
-  var originalConsole = {};
   ['log', 'info', 'warn', 'error', 'debug'].forEach(function (level) {
-    originalConsole[level] = console[level] && console[level].bind(console);
     console[level] = function () {
       try {
         var args = Array.prototype.slice.call(arguments).map(structuredCloneSafe);
         send({ kind: 'log', level: level, args: args });
       } catch (e) {
-        // If args aren't serializable, fall back to strings
         send({ kind: 'log', level: level, args: Array.prototype.slice.call(arguments).map(String) });
       }
     };
   });
 
   function structuredCloneSafe(v) {
-    // Primitives (including undefined) cross postMessage cleanly — pass through.
-    // JSON-stringifying undefined yields the JS value undefined, and JSON.parse
-    // on that throws, masking undefined as the string "undefined". Avoid.
     if (v === undefined || v === null) return v;
     var t = typeof v;
     if (t === 'number' || t === 'boolean' || t === 'string' || t === 'bigint') return v;
@@ -101,7 +85,7 @@ export function buildIframeSrcdoc(opts: RuntimeBuildOptions): string {
   var SHADOWED = ${JSON.stringify(SHADOWED_GLOBALS)};
   SHADOWED.forEach(function (name) {
     try {
-      Object.defineProperty(window, name, {
+      Object.defineProperty(self, name, {
         configurable: true,
         get: function () {
           throw new Error(
@@ -117,7 +101,7 @@ export function buildIframeSrcdoc(opts: RuntimeBuildOptions): string {
 
   var SHADOWED_CALLS = ${JSON.stringify(SHADOWED_CALLS)};
   SHADOWED_CALLS.forEach(function (name) {
-    window[name] = function () {
+    self[name] = function () {
       throw new Error(
         SANDBOX_ERROR_PREFIX + ' ' + name +
         '() is not available. Playgrounds are for KV data, not general JS execution. Learn more: ' +
@@ -127,26 +111,26 @@ export function buildIframeSrcdoc(opts: RuntimeBuildOptions): string {
   });
 
   // --- timers: wrap so they can be cleared on run-end --------------------
-  var nativeSetTimeout = window.setTimeout.bind(window);
-  var nativeClearTimeout = window.clearTimeout.bind(window);
-  var nativeSetInterval = window.setInterval.bind(window);
-  var nativeClearInterval = window.clearInterval.bind(window);
-  window.setTimeout = function (cb, ms) {
+  var nativeSetTimeout = self.setTimeout.bind(self);
+  var nativeClearTimeout = self.clearTimeout.bind(self);
+  var nativeSetInterval = self.setInterval.bind(self);
+  var nativeClearInterval = self.clearInterval.bind(self);
+  self.setTimeout = function (cb, ms) {
     var capped = Math.min(Math.max(0, ms || 0), 30000);
     var id = nativeSetTimeout(function () { timerHandles.delete(id); cb.apply(null, Array.prototype.slice.call(arguments, 2)); }, capped);
     timerHandles.add(id);
     return id;
   };
-  window.clearTimeout = function (id) { timerHandles.delete(id); nativeClearTimeout(id); };
-  window.setInterval = function (cb, ms) {
+  self.clearTimeout = function (id) { timerHandles.delete(id); nativeClearTimeout(id); };
+  self.setInterval = function (cb, ms) {
     var capped = Math.min(Math.max(0, ms || 0), 30000);
     var id = nativeSetInterval(cb, capped);
     timerHandles.add(id);
     return id;
   };
-  window.clearInterval = function (id) { timerHandles.delete(id); nativeClearInterval(id); };
+  self.clearInterval = function (id) { timerHandles.delete(id); nativeClearInterval(id); };
 
-  // --- RPC: iframe → parent → Rust ---------------------------------------
+  // --- RPC: worker → parent → Rust ---------------------------------------
   function nextRpcId() {
     rpcCounter += 1;
     return 'rpc-' + rpcCounter;
@@ -159,14 +143,21 @@ export function buildIframeSrcdoc(opts: RuntimeBuildOptions): string {
     });
   }
 
-  window.addEventListener('message', function (ev) {
+  self.addEventListener('message', function (ev) {
     var msg = ev.data;
-    if (!msg || msg.kind !== 'rpc-reply') return;
-    var pending = pendingRpc.get(msg.id);
-    if (!pending) return;
-    pendingRpc.delete(msg.id);
-    if (msg.ok) pending.resolve(msg.result);
-    else pending.reject(new Error(msg.error || 'RPC error'));
+    if (!msg) return;
+    if (msg.kind === 'rpc-reply') {
+      var pending = pendingRpc.get(msg.id);
+      if (!pending) return;
+      pendingRpc.delete(msg.id);
+      if (msg.ok) pending.resolve(msg.result);
+      else pending.reject(new Error(msg.error || 'RPC error'));
+      return;
+    }
+    if (msg.kind === 'teardown') {
+      timerHandles.forEach(function (id) { nativeClearTimeout(id); nativeClearInterval(id); });
+      timerHandles.clear();
+    }
   });
 
   // --- value coercion helpers --------------------------------------------
@@ -217,7 +208,6 @@ export function buildIframeSrcdoc(opts: RuntimeBuildOptions): string {
       return Array.from(new Uint8Array(v.buffer, v.byteOffset, v.byteLength));
     }
     if (value && typeof value.getReader === 'function') {
-      // ReadableStream — consume to bytes. postMessage can't carry streams.
       var reader = value.getReader();
       var chunks = [];
       var total = 0;
@@ -245,7 +235,7 @@ export function buildIframeSrcdoc(opts: RuntimeBuildOptions): string {
   // --- KVNamespace wrapper ------------------------------------------------
   var VALID_TYPES = ['text', 'json', 'arrayBuffer', 'stream'];
 
-  function parseTypeArg(typeOrOptions, bulk) {
+  function parseTypeArg(typeOrOptions) {
     if (typeOrOptions === undefined) return 'text';
     if (typeof typeOrOptions === 'string') return typeOrOptions;
     if (typeof typeOrOptions === 'object' && typeOrOptions !== null) {
@@ -272,7 +262,7 @@ export function buildIframeSrcdoc(opts: RuntimeBuildOptions): string {
     this._nsId = nsId;
   }
   KVNamespace.prototype.get = async function (keyOrKeys, typeOrOptions) {
-    var type = parseTypeArg(typeOrOptions, false);
+    var type = parseTypeArg(typeOrOptions);
     if (Array.isArray(keyOrKeys)) {
       validateType(type, false);
       var entries = await rpc('get', {
@@ -297,7 +287,7 @@ export function buildIframeSrcdoc(opts: RuntimeBuildOptions): string {
     }
   };
   KVNamespace.prototype.getWithMetadata = async function (keyOrKeys, typeOrOptions) {
-    var type = parseTypeArg(typeOrOptions, false);
+    var type = parseTypeArg(typeOrOptions);
     if (Array.isArray(keyOrKeys)) {
       validateType(type, false);
       var entries = await rpc('getWithMetadata', {
@@ -357,28 +347,19 @@ export function buildIframeSrcdoc(opts: RuntimeBuildOptions): string {
   };
 
   // --- bind env + self and run user code ---------------------------------
-  var bindings = JSON.parse(document.getElementById('kvault-bindings').textContent);
+  var bindings = ${bindingsJson};
   var envObj = {};
   for (var i = 0; i < bindings.length; i++) {
     var b = bindings[i];
     envObj[b.ident] = new KVNamespace(b.namespaceId);
   }
-  Object.defineProperty(window, 'env', { value: envObj, writable: false, configurable: false });
-  // self is normally the global. We keep it as the global for basic JS (so built-ins work)
-  // but expose the bindings on it too so scripts using self.NS_TITLE still work.
+  Object.defineProperty(self, 'env', { value: envObj, writable: false, configurable: false });
+  // Also expose each binding as a global on self so scripts using self.NS_TITLE style still work.
   for (var ident in envObj) {
     if (Object.prototype.hasOwnProperty.call(envObj, ident)) {
       Object.defineProperty(self, ident, { value: envObj[ident], writable: false, configurable: false });
     }
   }
-
-  // Cleanup of timers when parent tells us we're done
-  window.addEventListener('message', function (ev) {
-    if (ev.data && ev.data.kind === 'teardown') {
-      timerHandles.forEach(function (id) { nativeClearTimeout(id); nativeClearInterval(id); });
-      timerHandles.clear();
-    }
-  });
 
   send({ kind: 'ready' });
 
@@ -390,7 +371,6 @@ export function buildIframeSrcdoc(opts: RuntimeBuildOptions): string {
   (async function () {
     try {
       var __kvaultResult = await __kvaultMain();
-      // Cleanup residual timers so a script with a dangling setTimeout doesn't keep the iframe alive longer than needed
       timerHandles.forEach(function (id) { nativeClearTimeout(id); nativeClearInterval(id); });
       timerHandles.clear();
       send({ kind: 'done', returnValue: structuredCloneSafe(__kvaultResult) });
@@ -403,12 +383,5 @@ export function buildIframeSrcdoc(opts: RuntimeBuildOptions): string {
     }
   })();
 })();
-</script>
-</body>
-</html>`;
-}
-
-function escapeForScriptTag(json: string): string {
-  // Prevent "</script>" inside JSON from closing the surrounding tag.
-  return json.replace(/<\/script/gi, '<\\/script');
+`;
 }
