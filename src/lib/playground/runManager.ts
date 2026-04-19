@@ -35,8 +35,18 @@ async function getEsbuild(): Promise<EsbuildModule> {
   if (cache.promise) return cache.promise;
   cache.promise = (async () => {
     const mod = (await import('esbuild-wasm')) as unknown as EsbuildModule;
+    // Fetch + compile the WASM on the main thread rather than letting esbuild's
+    // internal Web Worker do it. Inside a blob: worker on Tauri's custom app
+    // scheme, the fetch can hang — pre-compiling here and passing the
+    // WebAssembly.Module skips the worker-side fetch path entirely.
+    const res = await fetch(esbuildWasmUrl);
+    if (!res.ok) throw new Error(`Failed to load esbuild wasm: ${res.status}`);
+    const wasmModule =
+      'compileStreaming' in WebAssembly
+        ? await WebAssembly.compileStreaming(res)
+        : await WebAssembly.compile(await res.arrayBuffer());
     try {
-      await mod.initialize({ wasmURL: esbuildWasmUrl, worker: true });
+      await mod.initialize({ wasmModule, worker: true });
     } catch (err) {
       // Defensive: another caller may have already initialized this WASM
       // instance. Treat "already initialized" as success and proceed.
