@@ -1,3 +1,8 @@
+## 0.0.7 (2026-04-19)
+
+- fix: added 'wasm-unsafe-eval' to the production CSP's script-src directive. (65f7f21)
+bbfc8e)
+
 ## 0.0.6 (2026-04-19)
 
 - fix: docs navigation links (3bbfc8e)
