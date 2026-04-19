@@ -1,3 +1,18 @@
+## 0.0.8 (2026-04-19)
+
+- fix(playground): make Run work in production builds (afe2077)
+- fix(playground): unblock compile step under production CSP (5f5b63a)
+- release: v0.0.7 (867a2ec)
+- fix: added 'wasm-unsafe-eval' to the production CSP's script-src directive. (65f7f21)
+- release: v0.0.6 (b0c1ed1)
+- fix: docs navigation links (3bbfc8e)
+- fix: clippy too_many_arguments (c1ba38b)
+- docs: promote Playground to top-tier billing on README and landing pages (6ed0f0b)
+- docs: add Playground screenshot and de-brand Monaco as "Code Editor" (8a4bdf2)
+- update: updated screenshots (0425d48)
+- feat: add Playground — sandboxed TypeScript scratchpad for KV (b8d0865)
+- docs: add website and documentation links to README (7f57c6e)
+
 ## 0.0.7 (2026-04-19)
 
 - fix: added 'wasm-unsafe-eval' to the production CSP's script-src directive. (65f7f21)
