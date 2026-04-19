@@ -22,9 +22,14 @@
         <p class="eyebrow">Features</p>
         <h1>Playground</h1>
         <p class="lede">
-          A TypeScript scratchpad for your KV data — analogous to a SQL client's query file. Write a short script, autocomplete against the account's namespaces, and run it against Cloudflare in read-only or live mode.
+          A TypeScript scratchpad for your KV data with full IntelliSense — autocomplete, hover docs, inline type-checking, and go-to-definition against your account's real namespaces. Write a short script and run it against Cloudflare in read-only or live mode.
         </p>
       </header>
+
+      <figure>
+        <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/playground.png" alt="A playground tab with TypeScript IntelliSense showing delete / get / getWithMetadata / list / put on env.feature_flags, and the CONSOLE panel docked below" />
+        <figcaption>Full IntelliSense: autocomplete against the account's real namespaces and the KV binding API, with the CONSOLE panel docked below.</figcaption>
+      </figure>
 
       <section>
         <h2>What it is — and what it isn't</h2>
@@ -68,6 +73,21 @@
           as a new playground — round-tripping scripts through git is a
           supported workflow.
         </p>
+      </section>
+
+      <section>
+        <h2>IntelliSense</h2>
+        <p>
+          The playground is a full TypeScript editor — same experience you get
+          in VS Code, not a cut-down textbox:
+        </p>
+        <ul>
+          <li><strong>Autocomplete on your namespaces</strong> — type <code>env.</code> and every namespace on the current account shows up, each typed as a <code>KVNamespace</code>. The list regenerates whenever namespaces are added, renamed, or removed, so autocomplete is always in sync with what Cloudflare actually has.</li>
+          <li><strong>Autocomplete on the KV API</strong> — <code>.get</code>, <code>.put</code>, <code>.delete</code>, <code>.list</code>, <code>.getWithMetadata</code> pop up with their real signatures. Hit Tab to fill parameters, hover any method for docs, jump to the <code>KVNamespace</code> type definition to see the full surface.</li>
+          <li><strong>Inline type checking</strong> — passing a number where a string is expected, or forgetting <code>await</code>, gets a red squiggle as you type. Errors live in the same editor as the code, so you catch them before Run.</li>
+          <li><strong>Hover docs and parameter hints</strong> — hover an identifier to see the real namespace title and id; hover a KV method to see its parameter types and description; type <code>(</code> and the parameter hints stay visible as you fill them in.</li>
+          <li><strong>Top-level <code>await</code> and <code>return</code></strong> are first-class — the editor doesn't flag either, and the runtime wraps your script so both work at file scope.</li>
+        </ul>
       </section>
 
       <section>
@@ -292,7 +312,7 @@ return moved;
           <li>Top-level <code>await</code> works. You don't need to wrap the script in an async function.</li>
           <li>Top-level <code>return</code> also works — the script is implicitly wrapped in an async function, so <code>return</code> at the top of the file ends the run and surfaces its value under the return-value divider in the console.</li>
           <li>Use the return value as a lightweight summary: <code>return `updated ${n} keys`</code>.</li>
-          <li>Switching tabs doesn't reset the playground — Monaco state and the console's scrollback survive tab switches so you can hop away and come back to the same output.</li>
+          <li>Switching tabs doesn't reset the playground — editor state and the console's scrollback survive tab switches so you can hop away and come back to the same output.</li>
           <li>Export to <code>.ts</code> to share or version-control important scripts; re-import via the upload icon in the Playgrounds section header whenever.</li>
         </ul>
       </section>

@@ -19,7 +19,7 @@
         { href: 'features/accounts.html',         label: 'Multi-Account' },
         { href: 'features/global-search.html',    label: 'Global Search' },
         { href: 'features/filters.html',          label: 'Advanced Filtering' },
-        { href: 'features/monaco-editor.html',    label: 'Monaco Editor' },
+        { href: 'features/monaco-editor.html',    label: 'Code Editor' },
         { href: 'features/hex-viewer.html',       label: 'Hex Viewer & Binary' },
         { href: 'features/workspaces.html',       label: 'Workspaces' },
         { href: 'features/bulk-operations.html',  label: 'Bulk Operations' },

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Monaco Editor — KVault Docs</title>
-  <meta name="description" content="View and edit KV values in the same editor that powers VS Code. Auto-detects JSON, formats, tracks dirty state, and saves with Cmd+S." />
+  <title>Code Editor — KVault Docs</title>
+  <meta name="description" content="View and edit KV values in a full code editor — syntax highlighting, JSON formatting, IntelliSense, multi-cursor, dirty-state tracking, save with Cmd+S." />
   <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/kvault.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,22 +20,21 @@
     <main class="content">
       <header class="page-header">
         <p class="eyebrow">Features</p>
-        <h1>Monaco Editor</h1>
+        <h1>Code Editor</h1>
         <p class="lede">
-          View and edit values in a full-featured code editor — the same one that powers VS Code. Auto-detects JSON, tracks dirty state, and saves with Cmd+S.
+          View and edit values in a full code editor — syntax highlighting, IntelliSense, multi-cursor, find-in-file, JSON auto-format, dirty-state tracking, and save with Cmd+S.
         </p>
       </header>
 
       <section>
         <h2>Overview</h2>
         <p>
-          KVault embeds the Monaco editor — the same editor that powers VS Code
-          — for every text value. You get syntax highlighting, bracket
-          matching, find-and-replace, multi-cursor editing, and the editor
-          shortcuts you already know. When KVault detects a value is valid
-          JSON, it switches to JSON mode, formats the value, and offers a
-          Formatted/Raw toggle so you can flip between a pretty view and the
-          exact bytes on disk.
+          Every text value opens in a full code editor with syntax highlighting,
+          bracket matching, find-and-replace, multi-cursor editing, and the
+          shortcuts you already know from VS Code. When KVault detects a
+          value is valid JSON, it switches to JSON mode, formats the value,
+          and offers a Formatted/Raw toggle so you can flip between a pretty
+          view and the exact bytes on disk.
         </p>
         <p>
           Editor state is tracked per key: if you make changes and switch tabs,
@@ -43,19 +42,19 @@
           small dot in the tab strip so you never lose track of an open edit.
         </p>
         <figure>
-          <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/monaco-editor.png" alt="A JSON session value in the Monaco editor with syntax highlighting and the Formatted/Raw toggle" />
-          <figcaption>A JSON value rendered in Monaco with the Formatted/Raw toggle in the status bar.</figcaption>
+          <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/monaco-editor.png" alt="A JSON session value in the code editor with syntax highlighting and the Formatted/Raw toggle" />
+          <figcaption>A JSON value rendered with syntax highlighting and the Formatted/Raw toggle in the status bar.</figcaption>
         </figure>
       </section>
 
       <section>
         <h2>How to use it</h2>
         <p>
-          Click any key to open its value in a new tab. Edit inline — Monaco
-          highlights syntax, validates JSON, and surfaces errors in the gutter.
-          Use the Formatted/Raw toggle if KVault pretty-prints your JSON and
-          you need to see the exact stored bytes (for example, to preserve key
-          ordering or whitespace).
+          Click any key to open its value in a new tab. Edit inline — the
+          editor highlights syntax, validates JSON, and surfaces errors in
+          the gutter. Use the Formatted/Raw toggle if KVault pretty-prints
+          your JSON and you need to see the exact stored bytes (for example,
+          to preserve key ordering or whitespace).
         </p>
         <p>
           Save with <kbd>Cmd</kbd> <kbd>S</kbd>. KVault writes the new value
@@ -64,7 +63,7 @@
           place so you don't lose work.
         </p>
         <figure>
-          <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/editing-value.png" alt="Editing a feature flag value in the Monaco editor before saving" />
+          <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/editing-value.png" alt="Editing a feature flag value in the code editor before saving" />
           <figcaption>Editing a value before saving — the dirty indicator is visible above the editor.</figcaption>
         </figure>
         <figure>
@@ -76,7 +75,7 @@
       <section>
         <h2>Tips</h2>
         <ul>
-          <li>Monaco themes follow the app <a href="themes.html">theme</a> — switch themes and the editor updates too.</li>
+          <li>Editor colors follow the app <a href="themes.html">theme</a> — switch themes and the editor updates too.</li>
           <li>If a value turns out to be binary, KVault falls back to the <a href="hex-viewer.html">hex viewer</a> automatically — no manual toggle required.</li>
           <li>Use <kbd>Cmd</kbd> <kbd>N</kbd> from a namespace to create a new key with the editor pre-focused and content-type pre-detected.</li>
           <li>Need to bulk-update? Export to JSON from <a href="bulk-operations.html">bulk operations</a>, edit in your editor of choice, and import back.</li>

@@ -61,11 +61,15 @@ KVault is purpose-built for **KV power users**. It brings the speed and convenie
 </tr>
 <tr>
 <td>Plain text input for values</td>
-<td><strong>Full Monaco editor with syntax highlighting & formatting</strong></td>
+<td><strong>Full code editor with syntax highlighting, JSON formatting & IntelliSense</strong></td>
 </tr>
 <tr>
 <td>No bulk operations</td>
 <td><strong>Multi-select, bulk delete, bulk export</strong></td>
+</tr>
+<tr>
+<td>No scripting or bulk transforms</td>
+<td><strong>TypeScript Playground — run <code>env.NS.get/put/delete/list</code> against real Cloudflare with a Read-only safety toggle</strong></td>
 </tr>
 <tr>
 <td>No import capability</td>
@@ -117,12 +121,12 @@ Search across **every namespace in every account** in one shot. Toggle case sens
 
 Each namespace gets its own filter bar with real-time results. Save your frequently used filters by name and recall them instantly. Supports plain text, case-sensitive, whole-word, and regex modes.
 
-### Monaco Editor
+### Code Editor
 
-View and edit values in a full-featured code editor — the same one that powers VS Code. Auto-detects JSON and formats it for readability. Toggle between formatted and raw views. Save with `Cmd+S`, track dirty state, and never lose an edit.
+View and edit values in a full-featured code editor with syntax highlighting, IntelliSense, multi-cursor, and find-in-file. Auto-detects JSON and formats it for readability. Toggle between formatted and raw views. Save with `Cmd+S`, track dirty state, and never lose an edit.
 
 <p align="center">
-  <img src="public/screenshots/monaco-editor.png" alt="A JSON session value opened in the Monaco editor with syntax highlighting and the Formatted/Raw toggle" width="900" />
+  <img src="public/screenshots/monaco-editor.png" alt="A JSON session value opened in the code editor with syntax highlighting and the Formatted/Raw toggle" width="900" />
 </p>
 
 Hit `Cmd+S` to save and the status bar confirms the write:
@@ -130,6 +134,16 @@ Hit `Cmd+S` to save and the status bar confirms the write:
 <p align="center">
   <img src="public/screenshots/editing-value-saved.png" alt="Editing a feature flag value and saving with Cmd+S — the 'Saved' indicator appears above the editor" width="900" />
 </p>
+
+### Playground
+
+A TypeScript scratchpad for your KV data with **full IntelliSense** — autocomplete, hover docs, inline type-checking, and go-to-definition, typed against your **real** Cloudflare Workers `env` bindings. Type `env.` and every namespace on the account pops up; call `.get`, `.put`, `.list`, `.getWithMetadata` and you get real parameter hints and red squiggles when you pass the wrong type. Top-level `await` and `return` both work.
+
+<p align="center">
+  <img src="public/screenshots/playground.png" alt="A playground tab with TypeScript IntelliSense showing delete / get / getWithMetadata / list / put on env.feature_flags, and the CONSOLE panel docked below" width="900" />
+</p>
+
+Scripts transpile in-browser via `esbuild-wasm` (bundled, no network) and execute in a sandboxed iframe — no DOM, no `fetch`, no module imports — then RPC to the Rust backend for every KV call. A per-playground **Read-only** toggle blocks `put()` / `delete()` before any request goes out, so you can prototype a migration script safely, flip to **Live**, and run it for real. Playgrounds autosave locally and round-trip through `.ts` files for sharing or version control.
 
 ### Hex Viewer & Binary Support
 
@@ -192,7 +206,7 @@ API tokens are stored in your OS keychain (macOS Keychain, Windows Credential Ma
 
 ## Themes
 
-KVault ships with **10 built-in themes** — 5 dark and 5 light — each applied consistently across the UI *and* the Monaco editor. Switch from the command palette or Settings; the same key looks right at home in every palette.
+KVault ships with **10 built-in themes** — 5 dark and 5 light — each applied consistently across the UI *and* the code editor. Switch from the command palette or Settings; the same key looks right at home in every palette.
 
 <table>
 <tr>
