@@ -173,6 +173,25 @@ body,
   font-size: var(--font-size-base);
   color: var(--text-primary);
   background-color: var(--bg-primary);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/*
+ * Desktop-app feel: the chrome (sidebar lists, tabs, status bar, headers)
+ * shouldn't select on drag. Opt text selection back in for actual content:
+ * form fields, Monaco, xterm, and anything explicitly marked `.selectable`.
+ */
+input,
+textarea,
+[contenteditable='true'],
+[contenteditable=''],
+.monaco-editor,
+.monaco-editor .view-lines,
+.xterm,
+.selectable {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /*

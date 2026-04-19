@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { getTheme, applyTheme, DEFAULT_THEME_ID } from '../themes';
 
+export type NamespaceSortOrder = 'title-asc' | 'title-desc';
+
 export interface Settings {
   theme: string;
   editorFontSize: number;
@@ -8,6 +10,7 @@ export interface Settings {
   editorMinimap: boolean;
   autoSyncOnOpen: boolean;
   confirmDelete: boolean;
+  namespaceSortOrder: NamespaceSortOrder;
 }
 
 interface SettingsState extends Settings {
@@ -18,6 +21,7 @@ interface SettingsState extends Settings {
   setEditorMinimap: (enabled: boolean) => void;
   setAutoSyncOnOpen: (enabled: boolean) => void;
   setConfirmDelete: (enabled: boolean) => void;
+  setNamespaceSortOrder: (order: NamespaceSortOrder) => void;
   initSettings: () => void;
 }
 
@@ -30,6 +34,7 @@ const DEFAULT_SETTINGS: Settings = {
   editorMinimap: false,
   autoSyncOnOpen: true,
   confirmDelete: true,
+  namespaceSortOrder: 'title-asc',
 };
 
 function loadFromStorage(): Partial<Settings> {
@@ -64,6 +69,7 @@ function getSettingsSnapshot(state: SettingsState): Settings {
     editorMinimap: state.editorMinimap,
     autoSyncOnOpen: state.autoSyncOnOpen,
     confirmDelete: state.confirmDelete,
+    namespaceSortOrder: state.namespaceSortOrder,
   };
 }
 
@@ -106,6 +112,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     setConfirmDelete: (confirmDelete) => {
       set({ confirmDelete });
       persistSettings(getSettingsSnapshot({ ...get(), confirmDelete }));
+    },
+
+    setNamespaceSortOrder: (namespaceSortOrder) => {
+      set({ namespaceSortOrder });
+      persistSettings(getSettingsSnapshot({ ...get(), namespaceSortOrder }));
     },
 
     initSettings: () => {

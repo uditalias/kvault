@@ -4,6 +4,7 @@ import { useTabStore } from '../../stores/tabStore';
 import { useAccountStore } from '../../stores/accountStore';
 import { useSyncStore } from '../../stores/syncStore';
 import { useUpdateStore } from '../../stores/updateStore';
+import { useToastStore } from '../../stores/toastStore';
 import UpdatePopover from '../update/UpdatePopover';
 
 function formatNumber(n: number): string {
@@ -47,6 +48,16 @@ export default function StatusBar() {
     ? syncStatus[activeTab.namespaceId] ?? null
     : null;
 
+  const addToast = useToastStore((s) => s.addToast);
+
+  const handleCopyNamespaceId = () => {
+    if (!namespace) return;
+    navigator.clipboard
+      .writeText(namespace.id)
+      .then(() => addToast('Namespace ID copied', 'success'))
+      .catch(() => addToast('Failed to copy namespace ID', 'error'));
+  };
+
   const updateStatus = useUpdateStore((s) => s.status);
   const updateLatest = useUpdateStore((s) => s.latest);
   const updateError = useUpdateStore((s) => s.error);
@@ -78,6 +89,17 @@ export default function StatusBar() {
         {account && <span className={ITEM_CLASS}>{account.name}</span>}
 
         {namespace && <span className={ITEM_CLASS}>{namespace.title}</span>}
+
+        {namespace && (
+          <button
+            type="button"
+            onClick={handleCopyNamespaceId}
+            className={`${ITEM_CLASS} font-[family-name:var(--font-mono)] text-[var(--text-tertiary)] cursor-pointer`}
+            title={`Namespace ID: ${namespace.id} (click to copy)`}
+          >
+            {namespace.id}
+          </button>
+        )}
 
         {syncState && syncState.totalKeys > 0 && syncState.status !== 'error' && (
           <span className={ITEM_CLASS}>{formatNumber(syncState.totalKeys)} keys</span>
