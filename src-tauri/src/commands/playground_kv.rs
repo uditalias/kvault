@@ -308,6 +308,12 @@ impl From<ListKeysResponse> for PgListResult {
     }
 }
 
+// Tauri commands bind named invoke args 1:1 to positional parameters, and
+// `State` handles are framework-injected on top of user-provided args. We
+// can't reduce the arg count without reshaping the TS-side `invoke` call
+// or discarding the per-arg type clarity, neither of which is worthwhile
+// for this single command.
+#[allow(clippy::too_many_arguments)]
 #[tauri::command]
 pub async fn pg_list(
     db: State<'_, AppDb>,
