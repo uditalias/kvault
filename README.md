@@ -56,6 +56,10 @@ KVault is purpose-built for **KV power users**. It brings the speed and convenie
 <td><strong>All accounts & namespaces in a single tree view</strong></td>
 </tr>
 <tr>
+<td>No scripting or bulk transforms</td>
+<td><strong>TypeScript Playground with full IntelliSense — run <code>env.NS.get/put/delete/list</code> against real Cloudflare, with a Read-only safety toggle</strong></td>
+</tr>
+<tr>
 <td>No cross-namespace search</td>
 <td><strong>Global search across every namespace with regex support</strong></td>
 </tr>
@@ -66,10 +70,6 @@ KVault is purpose-built for **KV power users**. It brings the speed and convenie
 <tr>
 <td>No bulk operations</td>
 <td><strong>Multi-select, bulk delete, bulk export</strong></td>
-</tr>
-<tr>
-<td>No scripting or bulk transforms</td>
-<td><strong>TypeScript Playground — run <code>env.NS.get/put/delete/list</code> against real Cloudflare with a Read-only safety toggle</strong></td>
 </tr>
 <tr>
 <td>No import capability</td>
@@ -109,6 +109,16 @@ Connect multiple Cloudflare accounts and browse all your namespaces in a unified
   <img src="public/screenshots/welcome.png" alt="Unified accounts tree in the sidebar with the welcome screen showing keyboard shortcuts" width="900" />
 </p>
 
+### Playground — scripting, with full IntelliSense
+
+A TypeScript scratchpad for your KV data with **full IntelliSense** — autocomplete, hover docs, inline type-checking, and go-to-definition, typed against your **real** Cloudflare Workers `env` bindings. Type `env.` and every namespace on the account pops up; call `.get`, `.put`, `.list`, `.getWithMetadata` and you get real parameter hints and red squiggles when you pass the wrong type. Top-level `await` and `return` both work.
+
+<p align="center">
+  <img src="public/screenshots/playground.png" alt="A playground tab with TypeScript IntelliSense showing delete / get / getWithMetadata / list / put on env.feature_flags, and the CONSOLE panel docked below" width="900" />
+</p>
+
+Scripts transpile in-browser via `esbuild-wasm` (bundled, no network) and execute in a sandboxed iframe — no DOM, no `fetch`, no module imports — then RPC to the Rust backend for every KV call. A per-playground **Read-only** toggle blocks `put()` / `delete()` before any request goes out, so you can prototype a migration script safely, flip to **Live**, and run it for real. Playgrounds autosave locally and round-trip through `.ts` files for sharing or version control.
+
 ### Global Search
 
 Search across **every namespace in every account** in one shot. Toggle case sensitivity, whole-word matching, or full regex — results are grouped by namespace with match counts so you can find that key in seconds, not minutes.
@@ -134,16 +144,6 @@ Hit `Cmd+S` to save and the status bar confirms the write:
 <p align="center">
   <img src="public/screenshots/editing-value-saved.png" alt="Editing a feature flag value and saving with Cmd+S — the 'Saved' indicator appears above the editor" width="900" />
 </p>
-
-### Playground
-
-A TypeScript scratchpad for your KV data with **full IntelliSense** — autocomplete, hover docs, inline type-checking, and go-to-definition, typed against your **real** Cloudflare Workers `env` bindings. Type `env.` and every namespace on the account pops up; call `.get`, `.put`, `.list`, `.getWithMetadata` and you get real parameter hints and red squiggles when you pass the wrong type. Top-level `await` and `return` both work.
-
-<p align="center">
-  <img src="public/screenshots/playground.png" alt="A playground tab with TypeScript IntelliSense showing delete / get / getWithMetadata / list / put on env.feature_flags, and the CONSOLE panel docked below" width="900" />
-</p>
-
-Scripts transpile in-browser via `esbuild-wasm` (bundled, no network) and execute in a sandboxed iframe — no DOM, no `fetch`, no module imports — then RPC to the Rust backend for every KV call. A per-playground **Read-only** toggle blocks `put()` / `delete()` before any request goes out, so you can prototype a migration script safely, flip to **Live**, and run it for real. Playgrounds autosave locally and round-trip through `.ts` files for sharing or version control.
 
 ### Hex Viewer & Binary Support
 

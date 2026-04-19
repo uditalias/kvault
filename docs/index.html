@@ -610,6 +610,7 @@
     .feature.w3 { grid-column: span 3; }
     .feature.w2 { grid-column: span 2; }
     .feature.w4 { grid-column: span 4; }
+    .feature.w6 { grid-column: span 6; }
 
     /* =========================
        THEMES STRIP
@@ -768,7 +769,7 @@
        ========================= */
     @media (max-width: 960px) {
       .features .grid { grid-template-columns: repeat(2, 1fr); }
-      .feature.w2, .feature.w3, .feature.w4 { grid-column: span 2; }
+      .feature.w2, .feature.w3, .feature.w4, .feature.w6 { grid-column: span 2; }
       .themes-grid { grid-template-columns: repeat(2, 1fr); }
       nav ul { display: none; }
     }
@@ -852,40 +853,50 @@
         </article>
 
         <article class="story-slide" data-slide="2">
+          <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/playground.png"
+               alt="KVault playground with TypeScript IntelliSense showing the KV API on env.feature_flags" />
+          <div class="caption">
+            <span class="step"><span class="num">03 / playground</span>Scripts, not just clicks</span>
+            <h3>TypeScript against <span class="accent">your real bindings</span>, with IntelliSense.</h3>
+            <p>Autocomplete every namespace and KV method, hover docs, red squiggles on the wrong type. Sandboxed, transpiled locally, RPC'd to Cloudflare. Read-only by default — flip to Live when the script is right.</p>
+          </div>
+        </article>
+
+        <article class="story-slide" data-slide="3">
           <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/monaco-editor.png"
                alt="KVault code editor showing a JSON value with syntax highlighting" />
           <div class="caption">
-            <span class="step"><span class="num">03 / edit</span>The editor you already know</span>
+            <span class="step"><span class="num">04 / edit</span>The editor you already know</span>
             <h3>A full <span class="accent">code editor</span> — with IntelliSense, multi-cursor, and find-in-file.</h3>
             <p>JSON gets auto-detected and syntax-highlighted. Format on demand. Theme it to match your terminal. Binary values fall back to a hex viewer with an ASCII column.</p>
           </div>
         </article>
 
-        <article class="story-slide" data-slide="3">
+        <article class="story-slide" data-slide="4">
           <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/editing-value.png"
                alt="An edited KV value with the dirty indicator showing unsaved changes" />
           <div class="caption">
-            <span class="step"><span class="num">04 / save</span>Dirty state, tracked</span>
+            <span class="step"><span class="num">05 / save</span>Dirty state, tracked</span>
             <h3>Make changes. Hit <span class="accent">⌘S</span>. Done.</h3>
             <p>KVault tracks unsaved edits per tab and warns before you lose work. Saved values round-trip back to Cloudflare and the local cache stays in sync.</p>
           </div>
         </article>
 
-        <article class="story-slide" data-slide="4">
+        <article class="story-slide" data-slide="5">
           <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/create-key-dialog.png"
                alt="KVault create key dialog with name, value, and TTL fields" />
           <div class="caption">
-            <span class="step"><span class="num">05 / create</span>Without leaving the keyboard</span>
+            <span class="step"><span class="num">06 / create</span>Without leaving the keyboard</span>
             <h3>Create keys with <span class="accent">⌘N</span> — TTL, JSON, anything.</h3>
             <p>Inline validation, optional TTL, paste a JSON blob and KVault formats it for you. The new key shows up in the list the moment Cloudflare confirms.</p>
           </div>
         </article>
 
-        <article class="story-slide" data-slide="5">
+        <article class="story-slide" data-slide="6">
           <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/global-search.png"
                alt="KVault global search results grouped by namespace with match counts" />
           <div class="caption">
-            <span class="step"><span class="num">06 / search</span>Across everything, at once</span>
+            <span class="step"><span class="num">07 / search</span>Across everything, at once</span>
             <h3>One query. <span class="accent">Every account.</span> Every namespace.</h3>
             <p>Plain, case-sensitive, whole-word, or full regex. Results group by namespace with match counts so you can jump straight to what you need — the thing the dashboard refuses to do.</p>
           </div>
@@ -898,7 +909,7 @@
       <div class="story-controls">
         <div class="story-dots" id="story-dots" role="tablist" aria-label="Choose a slide"></div>
         <div class="story-counter" aria-live="polite">
-          <span class="now" id="story-now">01</span> <span>/ 06</span>
+          <span class="now" id="story-now">01</span> <span>/ 07</span>
         </div>
       </div>
     </div>
@@ -910,7 +921,7 @@
       <div class="eyebrow">What it does</div>
       <h2>Built for KV <span class="accent">power users</span>.</h2>
       <p>
-        Nine things the dashboard makes tedious — and how KVault handles them without ever leaving your keyboard.
+        Ten things the dashboard makes tedious — and how KVault handles them without ever leaving your keyboard.
       </p>
     </div>
 
@@ -927,45 +938,51 @@
         <p>IntelliSense, multi-cursor, find-in-file. Auto-detects JSON, formats on demand, tracks dirty state, saves with ⌘S.</p>
       </article>
 
+      <article class="feature w6">
+        <span class="num">03 / playground</span>
+        <h3>A TypeScript <span class="accent">playground</span> against your real KV bindings.</h3>
+        <p>Full IntelliSense — autocomplete every namespace and every KV method, hover docs, inline type checking. Sandboxed, transpiled locally, runs against Cloudflare over RPC. Read-only by default; flip to Live when the script is right. Automate what would take a hundred clicks.</p>
+      </article>
+
       <article class="feature w2">
-        <span class="num">03 / tabs</span>
+        <span class="num">04 / tabs</span>
         <h3>Tabbed browsing.</h3>
         <p>Preview tabs auto-replace. Reopen closed with ⌘⇧T.</p>
       </article>
 
       <article class="feature w2">
-        <span class="num">04 / bulk</span>
+        <span class="num">05 / bulk</span>
         <h3>Bulk ops.</h3>
         <p>Multi-select, batch delete, export to JSON/CSV, import with preview.</p>
       </article>
 
       <article class="feature w2">
-        <span class="num">05 / palette</span>
+        <span class="num">06 / palette</span>
         <h3>⌘K everything.</h3>
         <p>20+ actions — accounts, namespaces, keys, sync, themes — one hotkey.</p>
       </article>
 
       <article class="feature w4">
-        <span class="num">06 / storage</span>
+        <span class="num">07 / storage</span>
         <h3>Local-first, <span class="accent">secret-safe</span>.</h3>
         <p>Key names cache to SQLite for instant filter and search — values fetched on demand.
            API tokens live in your OS keychain, never plaintext, never the app DB.</p>
       </article>
 
       <article class="feature w2">
-        <span class="num">07 / ttl</span>
+        <span class="num">08 / ttl</span>
         <h3>TTL at a glance.</h3>
         <p>Every key shows <code style="font-family:var(--mono);color:var(--fg);font-size:12px;">5d</code>, <code style="font-family:var(--mono);color:var(--fg);font-size:12px;">2h</code>, or <code style="font-family:var(--mono);color:var(--fg);font-size:12px;">expired</code> inline.</p>
       </article>
 
       <article class="feature w3">
-        <span class="num">08 / workspaces</span>
+        <span class="num">09 / workspaces</span>
         <h3>Save your <span class="accent">session</span>.</h3>
         <p>Persist open tabs, active filters, sidebar state. Restore your exact debugging context tomorrow.</p>
       </article>
 
       <article class="feature w3">
-        <span class="num">09 / binary</span>
+        <span class="num">10 / binary</span>
         <h3>Binary? No problem.</h3>
         <p>Hex viewer with ASCII column. Inline previews for PNG, JPEG, GIF. Text? Code editor. Image? Just show it.</p>
       </article>
