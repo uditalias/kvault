@@ -24,7 +24,7 @@ tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 tauri-plugin-store = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-reqwest = { version = "0.12", features = ["json"] }
+reqwest = { version = "0.12", features = ["json", "multipart"] }
 uuid = { version = "1", features = ["v4"] }
 rusqlite = { version = "0.31", features = ["bundled"] }
 chrono = { version = "0.4", features = ["serde"] }
@@ -34,8 +34,10 @@ percent-encoding = "2"
 regex = "1"
 semver = "1"
 async-trait = "0.1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync"] }
+tokio-util = { version = "0.7", features = ["rt"] }
+futures = "0.3"
 
 [dev-dependencies]
 mockito = "1"
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 

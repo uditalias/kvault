@@ -57,7 +57,7 @@ function SidebarHeaderAction({ activeView }: { activeView: ActivityView }) {
 export default function Sidebar({ activeView }: SidebarProps) {
   return (
     <div className="h-full bg-[var(--bg-secondary)] flex flex-col">
-      <div className="flex items-center justify-between pl-4 pr-2 h-[40px] min-h-[40px] text-[length:var(--font-size-sm)] font-semibold uppercase tracking-wider text-[var(--text-secondary)] border-b border-[var(--border)] leading-none">
+      <div className="flex items-center justify-between pl-5 pr-2 h-[35px] min-h-[35px] text-[11px] font-normal uppercase tracking-wider text-[var(--text-secondary)] leading-none">
         <span>{viewLabels[activeView]}</span>
         <SidebarHeaderAction activeView={activeView} />
       </div>

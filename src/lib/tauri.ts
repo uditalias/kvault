@@ -264,3 +264,157 @@ export const getDismissedVersion = () =>
 
 export const openReleasePage = (url: string) =>
   invoke<void>('open_release_page', { url });
+
+// === Playground (account-scoped TS scratchpads) ===
+
+export type PlaygroundMode = 'read-only' | 'live';
+
+export interface Playground {
+  id: string;
+  account_id: string;
+  name: string;
+  code: string;
+  mode: PlaygroundMode;
+  created_at: string;
+  updated_at: string;
+}
+
+export const listPlaygrounds = (accountId: string) =>
+  invoke<Playground[]>('list_playgrounds', { accountId });
+
+export const createPlayground = (accountId: string, name: string) =>
+  invoke<Playground>('create_playground', { accountId, name });
+
+export const updatePlaygroundCode = (id: string, code: string) =>
+  invoke<void>('update_playground_code', { id, code });
+
+export const updatePlaygroundName = (id: string, name: string) =>
+  invoke<void>('update_playground_name', { id, name });
+
+export const updatePlaygroundMode = (id: string, mode: PlaygroundMode) =>
+  invoke<void>('update_playground_mode', { id, mode });
+
+export const deletePlayground = (id: string) =>
+  invoke<void>('delete_playground', { id });
+
+export const exportPlaygroundContent = (id: string) =>
+  invoke<string>('export_playground_content', { id });
+
+export const importPlayground = (accountId: string, name: string, code: string) =>
+  invoke<Playground>('import_playground', { accountId, name, code });
+
+// === Playground KV binding commands (live against Cloudflare, no local cache) ===
+
+export interface PgValueResult {
+  data: number[] | null;
+  metadata: unknown | null;
+}
+
+export interface PgBulkEntry {
+  key: string;
+  data: number[] | null;
+  metadata: unknown | null;
+}
+
+export interface PgKeyFull {
+  name: string;
+  expiration?: number;
+  metadata?: unknown;
+}
+
+export interface PgListResult {
+  keys: PgKeyFull[];
+  list_complete: boolean;
+  cursor?: string;
+}
+
+export const pgGet = (
+  runId: string,
+  accountId: string,
+  namespaceId: string,
+  key: string,
+) => invoke<PgValueResult>('pg_get', { runId, accountId, namespaceId, key });
+
+export const pgGetBulk = (
+  runId: string,
+  accountId: string,
+  namespaceId: string,
+  keys: string[],
+) => invoke<PgBulkEntry[]>('pg_get_bulk', { runId, accountId, namespaceId, keys });
+
+export const pgGetWithMetadata = (
+  runId: string,
+  accountId: string,
+  namespaceId: string,
+  key: string,
+) =>
+  invoke<PgValueResult>('pg_get_with_metadata', {
+    runId,
+    accountId,
+    namespaceId,
+    key,
+  });
+
+export const pgGetBulkWithMetadata = (
+  runId: string,
+  accountId: string,
+  namespaceId: string,
+  keys: string[],
+) =>
+  invoke<PgBulkEntry[]>('pg_get_bulk_with_metadata', {
+    runId,
+    accountId,
+    namespaceId,
+    keys,
+  });
+
+export const pgPut = (
+  runId: string,
+  accountId: string,
+  namespaceId: string,
+  key: string,
+  value: number[],
+  expiration?: number,
+  expirationTtl?: number,
+  metadata?: unknown,
+) =>
+  invoke<void>('pg_put', {
+    runId,
+    accountId,
+    namespaceId,
+    key,
+    value,
+    expiration: expiration ?? null,
+    expirationTtl: expirationTtl ?? null,
+    metadata: metadata ?? null,
+  });
+
+export const pgDelete = (
+  runId: string,
+  accountId: string,
+  namespaceId: string,
+  key: string,
+) => invoke<void>('pg_delete', { runId, accountId, namespaceId, key });
+
+export const pgList = (
+  runId: string,
+  accountId: string,
+  namespaceId: string,
+  prefix?: string,
+  limit?: number,
+  cursor?: string,
+) =>
+  invoke<PgListResult>('pg_list', {
+    runId,
+    accountId,
+    namespaceId,
+    prefix: prefix ?? null,
+    limit: limit ?? null,
+    cursor: cursor ?? null,
+  });
+
+export const pgCancelRun = (runId: string) =>
+  invoke<void>('pg_cancel_run', { runId });
+
+export const pgRunComplete = (runId: string) =>
+  invoke<void>('pg_run_complete', { runId });

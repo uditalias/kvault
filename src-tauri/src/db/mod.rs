@@ -2,6 +2,7 @@ pub mod accounts;
 pub mod filters;
 pub mod keys;
 pub mod migrations;
+pub mod playgrounds;
 pub mod workspaces;
 
 use rusqlite::Connection;

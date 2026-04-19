@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playground — KVault Docs</title>
+  <meta name="description" content="Write TypeScript against your Cloudflare KV namespaces — a scratchpad for reads, writes, lists, and bulk operations, using the same env bindings as Workers." />
+  <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/kvault.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/docs.css" />
+</head>
+<body>
+  <nav class="topnav"></nav>
+
+  <div class="docs-shell">
+    <aside class="sidebar"></aside>
+
+    <main class="content">
+      <header class="page-header">
+        <p class="eyebrow">Features</p>
+        <h1>Playground</h1>
+        <p class="lede">
+          A TypeScript scratchpad for your KV data — analogous to a SQL client's query file. Write a short script, autocomplete against the account's namespaces, and run it against Cloudflare in read-only or live mode.
+        </p>
+      </header>
+
+      <section>
+        <h2>What it is — and what it isn't</h2>
+        <p>
+          A playground is a data-access scratchpad. You get the Cloudflare
+          Workers <code>env</code> binding model, standard JavaScript built-ins,
+          and full TypeScript autocomplete for every namespace on the current
+          account. That's it.
+        </p>
+        <p>
+          It is <strong>not</strong> a general JS sandbox. There is no network
+          access beyond KV, no DOM, no file system, no <code>fetch</code>, no
+          <code>setTimeout</code> beyond 30 seconds, and no module imports.
+          Playgrounds are for reading, writing, listing, and transforming KV
+          data — if you need to do anything else, it belongs in a real Worker,
+          not here. See <a href="#limitations">Limitations</a> below.
+        </p>
+      </section>
+
+      <section>
+        <h2>Creating a playground</h2>
+        <p>
+          Right-click on an account in the sidebar tree and choose
+          <strong>New Playground…</strong>, or expand the Playgrounds section
+          under the account and click the <code>+</code> button in its
+          hover-revealed toolbar. A new tab opens with an empty TypeScript
+          editor on top and a console panel (powered by xterm.js) on the
+          bottom. Your code is autosaved ~500 ms after every keystroke — you
+          can close the tab at any time without losing work.
+        </p>
+        <p>
+          Playgrounds are scoped to the account they were created under. They
+          live in KVault's local SQLite database, not on Cloudflare — nothing
+          leaves your machine except the KV calls themselves.
+        </p>
+        <p>
+          Right-clicking a playground in the sidebar opens a menu with
+          <strong>Rename…</strong>, <strong>Export to file…</strong>, and
+          <strong>Delete</strong>. The upload icon next to the <code>+</code>
+          in the Playgrounds section header imports a <code>.ts</code> file
+          as a new playground — round-tripping scripts through git is a
+          supported workflow.
+        </p>
+      </section>
+
+      <section>
+        <h2>The <code>env</code> binding</h2>
+        <p>
+          Every namespace on the account is exposed as a property on a global
+          <code>env</code> object, using the Cloudflare Workers convention.
+          Namespace titles are normalized to valid JS identifiers:
+        </p>
+        <ul>
+          <li>Non-alphanumeric characters replaced with <code>_</code> (case is preserved — the title you see in the tree is the identifier you type).</li>
+          <li>A leading underscore is prepended if the title would otherwise start with a digit.</li>
+          <li>Collisions (two titles normalizing to the same identifier) get a numeric suffix like <code>_2</code>, <code>_3</code>.</li>
+        </ul>
+        <p>
+          So a namespace titled <code>user sessions</code> becomes
+          <code>env.user_sessions</code>, and a namespace titled
+          <code>42-flags</code> becomes <code>env._42_flags</code>. Hover an
+          identifier in the editor to see the real namespace title and id.
+        </p>
+        <p>
+          Because the Worker binding exposes the namespaces via <code>env</code>
+          as well as via the global scope, <code>self.USER_SESSIONS</code>
+          also works — pick whichever feels natural.
+        </p>
+      </section>
+
+      <section>
+        <h2>Read-only vs Live mode</h2>
+        <p>
+          New playgrounds start in <strong>Read-only</strong> mode — every
+          <code>put()</code> or <code>delete()</code> call throws, no request
+          reaches Cloudflare. This is the default because "I just wanted to
+          peek at some keys" should never be a foot-gun.
+        </p>
+        <p>
+          To enable writes, click the mode toggle in the tab header; the dot
+          turns from green to red. The mode is saved per playground, so a
+          migration script you intend as live stays live across app restarts.
+          The toggle is disabled while a run is in progress — mid-run switches
+          don't affect the active run either way, which avoids confusing
+          half-applied scripts.
+        </p>
+      </section>
+
+      <section>
+        <h2>Running a script</h2>
+        <p>
+          Click <strong>Run</strong> in the tab header, or press
+          <kbd>⌘/Ctrl + Enter</kbd>. The script is transpiled in-browser by
+          <code>esbuild-wasm</code> (bundled locally with the app — no network
+          fetch), then run in a sandboxed iframe (<code>sandbox="allow-scripts"</code>,
+          no same-origin) with the <code>env</code> bindings injected via a
+          message-passing RPC. The iframe cannot touch KV directly — every
+          <code>get</code> / <code>put</code> / <code>delete</code> / <code>list</code>
+          is forwarded to the Rust backend over <code>postMessage</code>,
+          which is also where the Read-only gate is enforced.
+        </p>
+        <p>
+          Console output streams into the xterm panel as it happens;
+          <code>console.log</code>, <code>.info</code>, <code>.warn</code>,
+          <code>.error</code>, and <code>.debug</code> are all wired and
+          colored by level. The final return value of the script is
+          pretty-printed at the end under a
+          <code>—— return value ——</code> divider.
+        </p>
+        <p>
+          To stop a run, click <strong>Stop</strong> or press
+          <kbd>⌘/Ctrl + .</kbd>. Stop cancels all <em>future</em> KV
+          operations immediately. Requests whose HTTP call is already past
+          the point-of-no-return may still complete at Cloudflare, so treat
+          Stop as a best-effort kill switch, not an undo.
+        </p>
+      </section>
+
+      <section>
+        <h2>The console panel</h2>
+        <p>
+          The bottom panel is an xterm.js terminal wrapped in its own header
+          bar. The header stays docked even when the console is collapsed so
+          the affordance for reopening it is always visible.
+        </p>
+        <ul>
+          <li><strong>Clear</strong> (trash icon) — wipes the xterm buffer without touching the editor.</li>
+          <li><strong>Copy output</strong> (copy icon) — copies the entire terminal buffer to the clipboard and raises a toast; if the buffer is empty, the toast says so.</li>
+          <li><strong>Collapse / Show</strong> (chevron) — toggles the terminal area. Dragging the divider between editor and console also collapses; the chevron stays in sync either way.</li>
+        </ul>
+        <p>
+          The console auto-expands on Run even if it was collapsed, so you
+          never lose output to a hidden panel. Clear and Copy remain clickable
+          while collapsed — both act on the buffered terminal, not its
+          visibility.
+        </p>
+      </section>
+
+      <section>
+        <h2>API reference</h2>
+        <p>
+          The playground implements the full Cloudflare Workers KV binding
+          surface. Method signatures and semantics match the
+          <a href="https://developers.cloudflare.com/kv/api/" target="_blank" rel="noreferrer">official Workers KV API</a>
+          exactly — code copied from a real Worker runs here unchanged.
+        </p>
+
+        <h3><code>env.NS.get(key, type?)</code></h3>
+        <p>
+          Reads a single key. <code>type</code> is one of
+          <code>'text'</code> (default), <code>'json'</code>,
+          <code>'arrayBuffer'</code>, or <code>'stream'</code>. Returns the
+          value, or <code>null</code> if the key doesn't exist.
+        </p>
+
+        <h3><code>env.NS.get(keys, type?)</code></h3>
+        <p>
+          Bulk read up to 100 keys in one call (Cloudflare's limit, enforced
+          server-side). Returns a <code>Map&lt;string, Value | null&gt;</code>.
+          Only <code>'text'</code> and <code>'json'</code> are allowed for
+          bulk reads.
+        </p>
+
+        <h3><code>env.NS.getWithMetadata(key | keys, type?)</code></h3>
+        <p>
+          Same as <code>get</code>, but returns
+          <code>{ value, metadata }</code> (or a Map of them for bulk calls).
+          Metadata is whatever was stored with the key on
+          <code>put</code>.
+        </p>
+
+        <h3><code>env.NS.put(key, value, options?)</code></h3>
+        <p>
+          Writes a value. <code>value</code> can be a string,
+          <code>ArrayBuffer</code>, <code>ArrayBufferView</code>, or
+          <code>ReadableStream</code>. Options:
+        </p>
+        <ul>
+          <li><code>expiration</code> — absolute Unix timestamp (seconds since epoch).</li>
+          <li><code>expirationTtl</code> — relative seconds from now.</li>
+          <li><code>metadata</code> — any JSON-serializable value (Cloudflare caps the serialized form at 1 KiB).</li>
+        </ul>
+        <p>
+          Read-only mode rejects this call before any request is made.
+        </p>
+
+        <h3><code>env.NS.delete(key)</code></h3>
+        <p>
+          Removes a key. A successful call for a non-existent key is treated
+          as success (matches Cloudflare's behavior — no error is raised).
+          Read-only mode rejects this call before any request is made.
+        </p>
+
+        <h3><code>env.NS.list(options?)</code></h3>
+        <p>
+          Lists keys with prefix, limit, and cursor. Returns
+          <code>{ keys, list_complete, cursor }</code> matching the Workers
+          binding verbatim. Unlike the rest of KVault's UI, this call is
+          <em>always live</em> — it hits Cloudflare directly and returns real
+          cursors, so pagination behaves the same as in production.
+        </p>
+      </section>
+
+      <section>
+        <h2>Examples</h2>
+
+        <h3>Read a single value</h3>
+        <pre><code>const session = await env.USER_SESSIONS.get('session:abc-123', 'json');
+console.log(session);
+return session;
+</code></pre>
+
+        <h3>Scan a prefix and open one</h3>
+        <pre><code>const res = await env.USER_SESSIONS.list({ prefix: 'user:42:', limit: 50 });
+console.log('matches:', res.keys.length);
+return res.keys.map(k => k.name);
+</code></pre>
+
+        <h3>Bulk TTL bump (requires Live mode)</h3>
+        <pre><code>const { keys } = await env.SESSIONS.list({ prefix: 'short-lived:' });
+for (const k of keys) {
+  const value = await env.SESSIONS.get(k.name);
+  if (value !== null) {
+    await env.SESSIONS.put(k.name, value, { expirationTtl: 86400 });
+  }
+}
+return `bumped ${keys.length} keys`;
+</code></pre>
+
+        <h3>Migrate with a transform (requires Live mode)</h3>
+        <pre><code>const { keys } = await env.PROFILES.list({ prefix: 'profile:' });
+let moved = 0;
+for (const k of keys) {
+  const val = await env.PROFILES.get(k.name, 'json');
+  if (val && typeof val === 'object' &amp;&amp; 'email' in val) {
+    await env.PROFILES_V2.put(k.name, JSON.stringify({ ...val, emailLower: val.email.toLowerCase() }));
+    moved++;
+  }
+}
+return moved;
+</code></pre>
+      </section>
+
+      <section id="limitations">
+        <h2>Limitations</h2>
+        <p>
+          Playgrounds are deliberately narrow. Reaching for any of the
+          following throws a clear error pointing back at this page:
+        </p>
+        <ul>
+          <li><strong>No network</strong> — <code>fetch</code>, <code>XMLHttpRequest</code>, <code>WebSocket</code>, and <code>EventSource</code> are shadowed and throw on access. The only way out of the sandbox is the <code>env</code> bindings.</li>
+          <li><strong>No DOM or storage</strong> — <code>document</code>, <code>navigator</code>, <code>localStorage</code>, <code>sessionStorage</code>, <code>indexedDB</code>, and <code>caches</code> are all shadowed.</li>
+          <li><strong>No modules</strong> — <code>import()</code> and <code>require()</code> are not available. Playgrounds are single-file.</li>
+          <li><strong>Timers are capped</strong> — <code>setTimeout</code> / <code>setInterval</code> are allowed for short delays but any value above 30 s is clamped. Any residual timers are cleared when the run ends.</li>
+          <li><strong>Mock account is unsupported</strong> — the dev-only mock account can't run playgrounds. Switch to a real Cloudflare account.</li>
+          <li><strong>Cancellation is best-effort for writes</strong> — clicking Stop cancels future operations, but requests already in flight at the Cloudflare edge may still commit. Treat Live mode as "these changes are probably going to happen the instant you ask for them".</li>
+          <li><strong>Cloudflare's limits apply</strong> — key size (512 bytes), value size (25 MiB), metadata size (1 KiB), bulk-read max (100 keys), TTL min (60 s), writes per key (1 /s). These are enforced at Cloudflare, not mirrored client-side, so their numbers are always current.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Tips</h2>
+        <ul>
+          <li>Start in Read-only. Drop the script in, see it works, then flip to Live and run again. The extra second is worth it.</li>
+          <li>Top-level <code>await</code> works. You don't need to wrap the script in an async function.</li>
+          <li>Top-level <code>return</code> also works — the script is implicitly wrapped in an async function, so <code>return</code> at the top of the file ends the run and surfaces its value under the return-value divider in the console.</li>
+          <li>Use the return value as a lightweight summary: <code>return `updated ${n} keys`</code>.</li>
+          <li>Switching tabs doesn't reset the playground — Monaco state and the console's scrollback survive tab switches so you can hop away and come back to the same output.</li>
+          <li>Export to <code>.ts</code> to share or version-control important scripts; re-import via the upload icon in the Playgrounds section header whenever.</li>
+        </ul>
+      </section>
+
+      <nav class="page-nav">
+        <a href="themes.html"><span class="label">Previous</span>Themes</a>
+        <a href="../faq.html" class="next"><span class="label">Next</span>FAQ &amp; Troubleshooting</a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="../assets/docs.js"></script>
+</body>
+</html>

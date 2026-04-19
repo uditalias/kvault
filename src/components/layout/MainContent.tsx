@@ -5,10 +5,14 @@ import { useKeyStore } from '../../stores/keyStore';
 import { useLayoutStore } from '../../stores/layoutStore';
 import { useAccountStore } from '../../stores/accountStore';
 import { KeyList } from '../keys/KeyList';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ExternalLink } from 'lucide-react';
+import { openUrl } from '@tauri-apps/plugin-opener';
 import { ValueEditor } from '../editor/ValueEditor';
 import { SettingsPanel } from '../settings/SettingsPanel';
 import { ShortcutButton } from '../ui/ShortcutButton';
+import { PlaygroundTab } from '../playgrounds/PlaygroundTab';
+
+const DOCS_URL = 'https://uditalias.github.io/kvault/docs';
 
 /** How long before we consider a sync "stale" and re-trigger (5 minutes). */
 const STALE_MS = 5 * 60 * 1000;
@@ -42,6 +46,10 @@ function EmptyState() {
     useTabStore.getState().reopenLastClosedTab();
   }, []);
 
+  const handleOpenDocs = useCallback(() => {
+    void openUrl(DOCS_URL);
+  }, []);
+
   const shortcuts = [
     { label: 'Command Palette', keys: ['⌘', 'K'], action: handleCommandPalette },
     { label: 'Add Account', keys: ['⌘', '⇧', 'A'], action: handleAddAccount },
@@ -65,6 +73,11 @@ function EmptyState() {
         {shortcuts.map((s) => (
           <ShortcutButton key={s.label} label={s.label} keys={s.keys} onClick={s.action} />
         ))}
+        <ShortcutButton
+          label="View Documentation"
+          onClick={handleOpenDocs}
+          rightSlot={<ExternalLink size={14} className="text-[var(--text-tertiary)]" />}
+        />
       </div>
     </div>
   );
@@ -144,22 +157,45 @@ export default function MainContent() {
 
   const activeTab = tabs.find((t) => t.id === activeTabId) ?? null;
 
-  if (!activeTab) {
-    return <EmptyState />;
-  }
+  // Playground tabs stay mounted across tab switches. Monaco editor state
+  // and the xterm Terminal instance (with its scrollback) are held by the
+  // component, not the store, so tearing them down on every tab switch
+  // would wipe them. Render all open playgrounds as a persistent layer
+  // and show only the active one.
+  const playgroundTabs = tabs.filter(
+    (t) => t.type === 'playground' && t.playgroundId && !t.isDeleted,
+  );
 
-  if (activeTab.isDeleted) {
-    return <DeletedBanner tab={activeTab} />;
-  }
+  const renderNonPlayground = () => {
+    if (!activeTab) return <EmptyState />;
+    if (activeTab.isDeleted) return <DeletedBanner tab={activeTab} />;
+    if (activeTab.type === 'settings') return <SettingsPanel />;
+    if (activeTab.type === 'key') return <KeyTabContent tab={activeTab} />;
+    if (activeTab.type === 'playground') return null; // handled by layer
+    return <NamespaceContent tab={activeTab} />;
+  };
 
-  if (activeTab.type === 'settings') {
-    return <SettingsPanel />;
-  }
+  const activeIsLivePlayground =
+    activeTab?.type === 'playground' &&
+    !!activeTab.playgroundId &&
+    !activeTab.isDeleted;
 
-  if (activeTab.type === 'key') {
-    return <KeyTabContent tab={activeTab} />;
-  }
-
-  // type === 'namespace'
-  return <NamespaceContent tab={activeTab} />;
+  return (
+    <div className="h-full w-full relative">
+      {playgroundTabs.map((t) => (
+        <div
+          key={t.id}
+          className={`absolute inset-0 ${t.id === activeTabId ? '' : 'hidden'}`}
+        >
+          <PlaygroundTab
+            playgroundId={t.playgroundId!}
+            accountId={t.accountId}
+          />
+        </div>
+      ))}
+      {!activeIsLivePlayground && (
+        <div className="absolute inset-0">{renderNonPlayground()}</div>
+      )}
+    </div>
+  );
 }

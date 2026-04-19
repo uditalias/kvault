@@ -4,6 +4,7 @@ import { useAccountStore } from './accountStore';
 import { useTabStore } from './tabStore';
 import { useKeyStore } from './keyStore';
 import { useLayoutStore } from './layoutStore';
+import { usePlaygroundStore } from './playgroundStore';
 import type { Tab } from './tabStore';
 
 export interface WorkspaceState {
@@ -124,6 +125,12 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
           tab.keyName,
           tab.isPreview,
         );
+      } else if (tab.type === 'playground' && tab.playgroundId) {
+        // Only reopen if the playground still exists in the DB
+        const pg = usePlaygroundStore.getState().getPlayground(tab.playgroundId);
+        if (pg) {
+          tabStore.openPlaygroundTab(tab.accountId, tab.playgroundId, pg.name);
+        }
       }
     }
 

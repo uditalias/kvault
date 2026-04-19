@@ -174,3 +174,21 @@ body,
   color: var(--text-primary);
   background-color: var(--bg-primary);
 }
+
+/*
+ * xterm.js ships with `.xterm-viewport { background-color: #000 }` and
+ * `overflow-y: scroll` baked into its stylesheet. That forces a black
+ * box and an always-on scroll track, which clashes with the playground
+ * console's themed bg and leaves a visible sliver when the panel is
+ * collapsed. Let the panel's own background show through, and use
+ * `auto` so the track only appears when the buffer overflows.
+ */
+.xterm,
+.xterm-viewport,
+.xterm-screen {
+  background-color: transparent !important;
+}
+
+.xterm-viewport {
+  overflow-y: auto !important;
+}

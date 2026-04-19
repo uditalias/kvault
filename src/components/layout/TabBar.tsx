@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { X, Database, FileText, Settings } from 'lucide-react';
+import { X, Database, FileText, Settings, FileCode2 } from 'lucide-react';
 import { useTabStore } from '../../stores/tabStore';
 import { ScrollArea } from '../ui/ScrollArea';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
@@ -102,17 +102,26 @@ export default function TabBar() {
 
   return (
     <>
-      <div className="relative h-[40px] min-h-[40px] bg-[var(--bg-tertiary)]">
+      <div className="relative h-[35px] min-h-[35px] bg-[var(--bg-tertiary)]">
         {/* Bottom border on top of everything; active tab sits above it via z-20 */}
         <div className="absolute bottom-0 left-0 right-0 h-px bg-[var(--border)] z-10 pointer-events-none" />
-        <ScrollArea orientation="horizontal" className="h-[40px]">
+        <ScrollArea orientation="horizontal" className="h-[35px]">
       <div
         ref={containerRef}
         role="tablist"
-        className="flex items-center h-[40px]"
+        className="flex items-center h-[35px]"
       >
         {tabs.map((tab) => {
           const isActive = tab.id === activeTabId;
+          // Colored icons by type — VS Code convention
+          const iconColorClass =
+            tab.type === 'playground'
+              ? 'text-[var(--accent)]'
+              : tab.type === 'namespace'
+                ? 'text-[var(--success)]'
+                : tab.type === 'key'
+                  ? 'text-[var(--text-secondary)]'
+                  : 'text-[var(--text-secondary)]';
           return (
             <div
               key={tab.id}
@@ -123,22 +132,23 @@ export default function TabBar() {
               onDoubleClick={() => { if (tab.isPreview) pinPreviewTab(tab.id); }}
               onMouseDown={(e) => handleMouseDown(e, tab.id)}
               onContextMenu={(e) => handleContextMenu(e, tab.id)}
-              className={`group flex items-center h-full px-3 text-sm cursor-pointer select-none shrink-0 border-r border-[var(--border)] border-t-2 ${
+              className={`group flex items-center h-full px-3 text-[13px] cursor-pointer select-none shrink-0 border-t-[2px] ${
                 isActive
                   ? 'sticky left-0 right-0 z-20 bg-[var(--bg-primary)] text-[var(--text-primary)] border-t-[var(--accent)]'
-                  : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] border-t-transparent'
+                  : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] border-t-transparent hover:text-[var(--text-primary)]'
               }`}
             >
               {tab.isDirty && (
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] mr-1.5 shrink-0" />
               )}
-              <span className="shrink-0 text-[var(--text-tertiary)] mr-1.5">
+              <span className={`shrink-0 mr-1.5 ${iconColorClass}`}>
                 {tab.type === 'namespace' && <Database size={14} />}
                 {tab.type === 'key' && <FileText size={14} />}
                 {tab.type === 'settings' && <Settings size={14} />}
+                {tab.type === 'playground' && <FileCode2 size={14} />}
               </span>
               <span
-                className={`truncate max-w-[140px] ${tab.isPreview ? 'italic' : ''} ${
+                className={`truncate max-w-[160px] ${tab.isPreview ? 'italic' : ''} ${
                   tab.isDeleted ? 'line-through text-[var(--danger)]' : ''
                 }`}
               >
@@ -146,7 +156,9 @@ export default function TabBar() {
               </span>
               <button
                 onClick={(e) => handleCloseClick(e, tab.id)}
-                className="ml-2 w-5 h-5 flex items-center justify-center rounded invisible group-hover:visible text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] shrink-0"
+                className={`ml-2 w-5 h-5 flex items-center justify-center rounded text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)] shrink-0 ${
+                  isActive ? 'visible' : 'invisible group-hover:visible'
+                }`}
                 aria-label={`Close ${tab.title}`}
               >
                 <X size={14} />

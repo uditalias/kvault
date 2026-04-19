@@ -27,7 +27,8 @@
         { href: 'features/tabs.html',             label: 'Tabs & Navigation' },
         { href: 'features/command-palette.html',  label: 'Command Palette' },
         { href: 'features/sync.html',             label: 'Background Sync' },
-        { href: 'features/themes.html',           label: 'Themes' }
+        { href: 'features/themes.html',           label: 'Themes' },
+        { href: 'features/playground.html',       label: 'Playground' }
       ]
     },
     {

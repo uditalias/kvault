@@ -1,12 +1,16 @@
+import type { ReactNode } from 'react';
 import { Kbd } from './Kbd';
 
 interface ShortcutButtonProps {
   label: string;
-  keys: string[];
+  /** Keyboard shortcut to show on the right. Ignored if `rightSlot` is provided. */
+  keys?: string[];
+  /** Custom right-side content (e.g. an external-link icon) in place of the Kbd. */
+  rightSlot?: ReactNode;
   onClick: () => void;
 }
 
-export function ShortcutButton({ label, keys, onClick }: ShortcutButtonProps) {
+export function ShortcutButton({ label, keys, rightSlot, onClick }: ShortcutButtonProps) {
   return (
     <button
       onClick={onClick}
@@ -14,7 +18,7 @@ export function ShortcutButton({ label, keys, onClick }: ShortcutButtonProps) {
     >
       <span className="text-left">{label}</span>
       <span className="ml-auto">
-        <Kbd keys={keys} />
+        {rightSlot ?? (keys ? <Kbd keys={keys} /> : null)}
       </span>
     </button>
   );

@@ -36,6 +36,44 @@ pub struct CfKey {
     pub expiration: Option<i64>,
 }
 
+/// A key returned by list with full fidelity (includes metadata) for the
+/// playground runtime. The Cloudflare list endpoint returns metadata per-key
+/// when present; this type exposes it without flattening it away.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CfKeyFull {
+    pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expiration: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<serde_json::Value>,
+}
+
+/// Matches the shape of `KVNamespace.list()` in the Workers binding.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ListKeysResponse {
+    pub keys: Vec<CfKeyFull>,
+    pub list_complete: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cursor: Option<String>,
+}
+
+/// Options for `put_value_with_options` — mirrors the Workers binding's
+/// `KVNamespacePutOptions` shape.
+#[derive(Debug, Clone, Default)]
+pub struct PutOptions {
+    pub expiration: Option<i64>,
+    pub expiration_ttl: Option<i64>,
+    pub metadata: Option<serde_json::Value>,
+}
+
+/// Value + metadata pair, used by `get_with_metadata`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ValueWithMetadata {
+    pub value: Vec<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<serde_json::Value>,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CfTokenVerify {
     pub id: String,

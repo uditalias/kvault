@@ -2,11 +2,12 @@ import { create } from 'zustand';
 
 export interface Tab {
   id: string;
-  type: 'namespace' | 'key' | 'settings';
+  type: 'namespace' | 'key' | 'settings' | 'playground';
   title: string;
   namespaceId: string;
   accountId: string;
   keyName?: string;
+  playgroundId?: string;
   isPreview: boolean;
   isDirty: boolean;
   isDeleted: boolean;
@@ -21,6 +22,9 @@ interface TabState {
   openSettingsTab: () => void;
   openNamespaceTab: (accountId: string, namespaceId: string, namespaceTitle: string) => void;
   openKeyTab: (accountId: string, namespaceId: string, keyName: string, preview?: boolean) => void;
+  openPlaygroundTab: (accountId: string, playgroundId: string, title: string) => void;
+  renamePlaygroundTab: (playgroundId: string, title: string) => void;
+  closePlaygroundTab: (playgroundId: string) => void;
   closeTab: (tabId: string) => void;
   closeOtherTabs: (tabId: string) => void;
   closeAllTabs: () => void;
@@ -40,6 +44,10 @@ function makeNamespaceTabId(namespaceId: string): string {
 
 function makeKeyTabId(namespaceId: string, keyName: string): string {
   return `key:${namespaceId}:${keyName}`;
+}
+
+function makePlaygroundTabId(playgroundId: string): string {
+  return `playground:${playgroundId}`;
 }
 
 /**
@@ -173,6 +181,46 @@ export const useTabStore = create<TabState>((set, get) => ({
       tabs: [...state.tabs, newTab],
       activeTabId: tabId,
     }));
+  },
+
+  openPlaygroundTab: (accountId, playgroundId, title) => {
+    const tabId = makePlaygroundTabId(playgroundId);
+    const { tabs } = get();
+
+    const existing = tabs.find((t) => t.id === tabId);
+    if (existing) {
+      set({ activeTabId: tabId });
+      return;
+    }
+
+    const newTab: Tab = {
+      id: tabId,
+      type: 'playground',
+      title,
+      namespaceId: '',
+      accountId,
+      playgroundId,
+      isPreview: false,
+      isDirty: false,
+      isDeleted: false,
+    };
+
+    set((state) => ({
+      tabs: [...state.tabs, newTab],
+      activeTabId: tabId,
+    }));
+  },
+
+  renamePlaygroundTab: (playgroundId, title) => {
+    const tabId = makePlaygroundTabId(playgroundId);
+    set((state) => ({
+      tabs: state.tabs.map((t) => (t.id === tabId ? { ...t, title } : t)),
+    }));
+  },
+
+  closePlaygroundTab: (playgroundId) => {
+    const tabId = makePlaygroundTabId(playgroundId);
+    get().closeTab(tabId);
   },
 
   closeTab: (tabId) => {

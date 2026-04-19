@@ -66,11 +66,24 @@ pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
             updated_at TEXT NOT NULL DEFAULT (datetime('now'))
         );
 
+        -- playgrounds: account-scoped TS scratchpads for scripting against KV
+        CREATE TABLE IF NOT EXISTS playgrounds (
+            id TEXT PRIMARY KEY,
+            account_id TEXT NOT NULL,
+            name TEXT NOT NULL,
+            code TEXT NOT NULL DEFAULT '',
+            mode TEXT NOT NULL DEFAULT 'read-only',
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+        );
+
         -- Indexes
         CREATE INDEX IF NOT EXISTS idx_kv_keys_namespace ON kv_keys(namespace_id);
         CREATE INDEX IF NOT EXISTS idx_kv_keys_name ON kv_keys(namespace_id, key_name);
         CREATE INDEX IF NOT EXISTS idx_namespaces_account ON namespaces(account_id);
         CREATE INDEX IF NOT EXISTS idx_saved_filters_namespace ON saved_filters(namespace_id);
+        CREATE INDEX IF NOT EXISTS idx_playgrounds_account ON playgrounds(account_id);
         ",
     )?;
 

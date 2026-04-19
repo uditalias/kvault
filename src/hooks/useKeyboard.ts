@@ -40,6 +40,12 @@ function getActiveNamespaceTab() {
   return tab?.type === 'namespace' ? tab : null;
 }
 
+function getActivePlaygroundTab() {
+  const { tabs, activeTabId } = useTabStore.getState();
+  const tab = tabs.find((t) => t.id === activeTabId);
+  return tab?.type === 'playground' ? tab : null;
+}
+
 export function useKeyboard(callbacks: KeyboardCallbacks) {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -71,6 +77,29 @@ export function useKeyboard(callbacks: KeyboardCallbacks) {
           window.dispatchEvent(new CustomEvent('kvault:request-close-tab', { detail: { tabId: activeTabId } }));
         }
         return;
+      }
+
+      // Cmd+Enter — run active playground (when one is the active tab)
+      if (key === 'enter' && !e.shiftKey) {
+        const pgTab = getActivePlaygroundTab();
+        if (pgTab) {
+          // Monaco's own binding handles this when focused inside the editor;
+          // we only fire the global event when focus is elsewhere.
+          if (isMonacoFocused()) return;
+          e.preventDefault();
+          window.dispatchEvent(new CustomEvent('kvault:run-playground'));
+          return;
+        }
+      }
+
+      // Cmd+. — stop active playground run
+      if (key === '.' && !e.shiftKey) {
+        const pgTab = getActivePlaygroundTab();
+        if (pgTab) {
+          e.preventDefault();
+          window.dispatchEvent(new CustomEvent('kvault:stop-playground'));
+          return;
+        }
       }
 
       // --- Shortcuts that defer to Monaco when it is focused ---

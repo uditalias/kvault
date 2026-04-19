@@ -309,6 +309,198 @@ impl CloudflareClient {
         Ok(())
     }
 
+    /// List keys with prefix/limit/cursor for the playground runtime. Mirrors
+    /// `KVNamespace.list()` in the Workers binding, including metadata/expiration
+    /// per key and `list_complete` derived from an empty cursor.
+    pub async fn list_keys_full(
+        &self,
+        namespace_id: &str,
+        prefix: Option<&str>,
+        limit: Option<u32>,
+        cursor: Option<&str>,
+    ) -> Result<ListKeysResponse, CloudflareError> {
+        let url = format!(
+            "{}/accounts/{}/storage/kv/namespaces/{}/keys",
+            self.base_url, self.account_id, namespace_id
+        );
+
+        let mut request = self
+            .http
+            .get(&url)
+            .header("Authorization", self.auth_header());
+
+        if let Some(p) = prefix {
+            request = request.query(&[("prefix", p)]);
+        }
+        if let Some(l) = limit {
+            request = request.query(&[("limit", l.to_string())]);
+        }
+        if let Some(c) = cursor {
+            request = request.query(&[("cursor", c)]);
+        }
+
+        let resp = request.send().await?;
+        self.check_status_errors(resp.status()).await?;
+
+        let body: CfApiResponse<Vec<CfKeyFull>> = resp.json().await?;
+        if !body.success {
+            if let Some(err) = body.errors.first() {
+                return Err(CloudflareError::Api {
+                    code: err.code,
+                    message: err.message.clone(),
+                });
+            }
+        }
+
+        let keys = body.result.unwrap_or_default();
+        let next_cursor = body
+            .result_info
+            .and_then(|info| info.cursor.filter(|c| !c.is_empty()));
+        let list_complete = next_cursor.is_none();
+
+        Ok(ListKeysResponse {
+            keys,
+            list_complete,
+            cursor: next_cursor,
+        })
+    }
+
+    /// Fetch just the metadata associated with a key. Returns `Ok(None)` when
+    /// the key exists but has no metadata (Cloudflare returns null `result`).
+    pub async fn get_metadata(
+        &self,
+        namespace_id: &str,
+        key_name: &str,
+    ) -> Result<Option<serde_json::Value>, CloudflareError> {
+        let url = format!(
+            "{}/accounts/{}/storage/kv/namespaces/{}/metadata/{}",
+            self.base_url,
+            self.account_id,
+            namespace_id,
+            utf8_percent_encode(key_name, PATH_SEGMENT_ENCODE_SET)
+        );
+
+        let resp = self
+            .http
+            .get(&url)
+            .header("Authorization", self.auth_header())
+            .send()
+            .await?;
+
+        self.check_status_errors(resp.status()).await?;
+
+        let status = resp.status();
+        if status == StatusCode::NOT_FOUND {
+            return Ok(None);
+        }
+        if !status.is_success() {
+            if let Ok(body) = resp.json::<CfApiResponse<serde_json::Value>>().await {
+                if let Some(err) = body.errors.first() {
+                    return Err(CloudflareError::Api {
+                        code: err.code,
+                        message: err.message.clone(),
+                    });
+                }
+            }
+            return Err(CloudflareError::Api {
+                code: status.as_u16() as i32,
+                message: format!("HTTP {}", status),
+            });
+        }
+
+        let body: CfApiResponse<serde_json::Value> = resp.json().await?;
+        if !body.success {
+            if let Some(err) = body.errors.first() {
+                return Err(CloudflareError::Api {
+                    code: err.code,
+                    message: err.message.clone(),
+                });
+            }
+        }
+
+        Ok(body.result)
+    }
+
+    /// Fetch value + metadata together. Cloudflare exposes them on separate
+    /// endpoints; we call both concurrently and combine.
+    pub async fn get_value_with_metadata(
+        &self,
+        namespace_id: &str,
+        key_name: &str,
+    ) -> Result<ValueWithMetadata, CloudflareError> {
+        let value_fut = self.get_value(namespace_id, key_name);
+        let meta_fut = self.get_metadata(namespace_id, key_name);
+        let (value, metadata) = tokio::join!(value_fut, meta_fut);
+        Ok(ValueWithMetadata {
+            value: value?,
+            metadata: metadata?,
+        })
+    }
+
+    /// Full-options put matching `KVNamespace.put(key, value, options)` in the
+    /// Workers binding. When metadata is set, the request body is multipart/form-data
+    /// (Cloudflare's required shape). Without metadata, body is raw bytes.
+    pub async fn put_value_with_options(
+        &self,
+        namespace_id: &str,
+        key_name: &str,
+        value: &[u8],
+        options: &PutOptions,
+    ) -> Result<(), CloudflareError> {
+        let url = format!(
+            "{}/accounts/{}/storage/kv/namespaces/{}/values/{}",
+            self.base_url,
+            self.account_id,
+            namespace_id,
+            utf8_percent_encode(key_name, PATH_SEGMENT_ENCODE_SET)
+        );
+
+        let mut request = self.http.put(&url).header("Authorization", self.auth_header());
+
+        if let Some(exp) = options.expiration {
+            request = request.query(&[("expiration", exp.to_string())]);
+        }
+        if let Some(ttl) = options.expiration_ttl {
+            request = request.query(&[("expiration_ttl", ttl.to_string())]);
+        }
+
+        let resp = if let Some(meta) = &options.metadata {
+            let meta_str = serde_json::to_string(meta).map_err(|e| CloudflareError::Api {
+                code: 0,
+                message: format!("Failed to serialize metadata: {}", e),
+            })?;
+            let form = reqwest::multipart::Form::new()
+                .part(
+                    "value",
+                    reqwest::multipart::Part::bytes(value.to_vec())
+                        .file_name("value")
+                        .mime_str("application/octet-stream")
+                        .map_err(|e| CloudflareError::Api {
+                            code: 0,
+                            message: e.to_string(),
+                        })?,
+                )
+                .text("metadata", meta_str);
+            request.multipart(form).send().await?
+        } else {
+            request.body(value.to_vec()).send().await?
+        };
+
+        self.check_status_errors(resp.status()).await?;
+
+        let body: CfApiResponse<serde_json::Value> = resp.json().await?;
+        if !body.success {
+            if let Some(err) = body.errors.first() {
+                return Err(CloudflareError::Api {
+                    code: err.code,
+                    message: err.message.clone(),
+                });
+            }
+        }
+
+        Ok(())
+    }
+
     pub async fn delete_keys(
         &self,
         namespace_id: &str,

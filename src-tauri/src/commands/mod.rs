@@ -2,6 +2,8 @@ pub mod accounts;
 pub mod filters;
 pub mod keys;
 pub mod namespaces;
+pub mod playground_kv;
+pub mod playgrounds;
 pub mod sync;
 pub mod update;
 pub mod workspaces;

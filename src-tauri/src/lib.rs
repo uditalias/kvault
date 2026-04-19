@@ -51,6 +51,7 @@ pub fn run() {
             }
 
             app.manage(AppDb(Mutex::new(conn)));
+            app.manage(commands::playground_kv::PlaygroundRuns::new());
 
             // Build the OS-default menu and append a "Check for updates…"
             // item to the Help submenu so we keep all the standard OS
@@ -118,6 +119,25 @@ pub fn run() {
             commands::filters::list_saved_filters,
             commands::filters::save_filter,
             commands::filters::delete_saved_filter,
+            // Playground CRUD commands
+            commands::playgrounds::list_playgrounds,
+            commands::playgrounds::create_playground,
+            commands::playgrounds::update_playground_code,
+            commands::playgrounds::update_playground_name,
+            commands::playgrounds::update_playground_mode,
+            commands::playgrounds::delete_playground,
+            commands::playgrounds::export_playground_content,
+            commands::playgrounds::import_playground,
+            // Playground KV binding commands (fidelity-first, live against Cloudflare)
+            commands::playground_kv::pg_get,
+            commands::playground_kv::pg_get_bulk,
+            commands::playground_kv::pg_get_with_metadata,
+            commands::playground_kv::pg_get_bulk_with_metadata,
+            commands::playground_kv::pg_put,
+            commands::playground_kv::pg_delete,
+            commands::playground_kv::pg_list,
+            commands::playground_kv::pg_cancel_run,
+            commands::playground_kv::pg_run_complete,
             // Update commands
             commands::update::check_for_updates,
             commands::update::dismiss_update_version,
