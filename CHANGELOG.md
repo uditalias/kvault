@@ -1,3 +1,13 @@
+## 0.0.6 (2026-04-19)
+
+- fix: docs navigation links (3bbfc8e)
+- fix: clippy too_many_arguments (c1ba38b)
+- docs: promote Playground to top-tier billing on README and landing pages (6ed0f0b)
+- docs: add Playground screenshot and de-brand Monaco as "Code Editor" (8a4bdf2)
+- update: updated screenshots (0425d48)
+- feat: add Playground — sandboxed TypeScript scratchpad for KV (b8d0865)
+- docs: add website and documentation links to README (7f57c6e)
+
 ## 0.0.5 (2026-04-15)
 
 - docs: update build from source link in index.html (da8a196)
