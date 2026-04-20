@@ -1,3 +1,7 @@
+## 0.0.10 (2026-04-20)
+
+- fix(update): keep status-bar update popover inside the window (cff65c1)
+
 ## 0.0.9 (2026-04-20)
 
 - feat(accounts): namespace filter/sort, copy namespace ID, and chrome selection polish (690c040)
