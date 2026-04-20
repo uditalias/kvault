@@ -17,7 +17,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
   <style>
     :root {
@@ -36,6 +36,7 @@
 
       --sans:     'Geist', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
       --mono:     'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+      --serif:    'Instrument Serif', 'Times New Roman', serif;
 
       --page-max:  1240px;
       --ease:      cubic-bezier(0.22, 1, 0.36, 1);
@@ -143,6 +144,66 @@
     nav .gh .arrow { font-size: 10px; opacity: 0.6; }
 
     /* =========================
+       KINETIC MARQUEE BREAK
+       ========================= */
+    .kv-break {
+      position: relative;
+      padding: 0 0 120px;
+      margin-top: -80px;
+      overflow: hidden;
+    }
+
+    .kv-marquee {
+      --marquee-duration: 50s;
+      --marquee-size: clamp(72px, 12vw, 170px);
+      --marquee-gap: 40px;
+      position: relative;
+      overflow: hidden;
+      padding: 10px 0;
+      -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+              mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+    }
+    .kv-marquee + .kv-marquee { margin-top: 14px; }
+    .kv-marquee__track {
+      display: flex;
+      width: max-content;
+      animation: kv-scroll var(--marquee-duration) linear infinite;
+      will-change: transform;
+    }
+    .kv-marquee__track--reverse { animation-direction: reverse; }
+    @keyframes kv-scroll {
+      from { transform: translate3d(0, 0, 0); }
+      to   { transform: translate3d(-50%, 0, 0); }
+    }
+    .kv-marquee__item {
+      display: inline-flex;
+      align-items: center;
+      padding: 0 var(--marquee-gap);
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: var(--marquee-size);
+      line-height: 1.2;
+      letter-spacing: -0.03em;
+      white-space: nowrap;
+      color: var(--fg);
+    }
+    .kv-marquee__item--italic {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .kv-marquee__item--outline {
+      -webkit-text-stroke: 1.5px var(--fg);
+      color: transparent;
+    }
+    .kv-marquee__item--star {
+      color: var(--accent);
+      font-size: calc(var(--marquee-size) * 0.7);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .kv-marquee__track { animation: none; }
+    }
+
+    /* =========================
        HERO
        ========================= */
     .hero {
@@ -187,16 +248,21 @@
       font-size: clamp(2.8rem, 6vw, 5.2rem);
       line-height: 1.02;
       letter-spacing: -0.035em;
-      color: var(--fg);
       margin-bottom: 28px;
+      background: linear-gradient(180deg, #ffffff 0%, #ededee 30%, #a8a8ae 75%, #6a6a70 100%);
+      -webkit-background-clip: text;
+              background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
     }
     h1.hero-title .accent {
       font-weight: 500;
       color: var(--accent);
+      -webkit-text-fill-color: var(--accent);
+      background: none;
     }
     h1.hero-title .subj {
       font-weight: 500;
-      color: var(--fg);
     }
 
     .hero .lede {
@@ -406,11 +472,20 @@
       font-weight: 400;
       font-size: clamp(1.25rem, 2.4vw, 1.9rem);
       letter-spacing: -0.02em;
-      color: var(--fg);
       line-height: 1.2;
       margin-bottom: 8px;
+      background: linear-gradient(180deg, #ffffff 0%, #ededee 30%, #a8a8ae 75%, #6a6a70 100%);
+      -webkit-background-clip: text;
+              background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
     }
-    .story-slide h3 .accent { color: var(--accent); font-weight: 500; }
+    .story-slide h3 .accent {
+      color: var(--accent);
+      -webkit-text-fill-color: var(--accent);
+      background: none;
+      font-weight: 500;
+    }
     .story-slide p {
       font-size: 14.5px;
       color: var(--fg-muted);
@@ -539,11 +614,17 @@
       font-size: clamp(2rem, 4vw, 3.2rem);
       letter-spacing: -0.025em;
       line-height: 1.1;
-      color: var(--fg);
+      background: linear-gradient(180deg, #ffffff 0%, #ededee 30%, #a8a8ae 75%, #6a6a70 100%);
+      -webkit-background-clip: text;
+              background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
     }
     .section-header h2 .accent {
       font-weight: 500;
       color: var(--accent);
+      -webkit-text-fill-color: var(--accent);
+      background: none;
     }
     .section-header p {
       margin-top: 18px;
@@ -593,11 +674,17 @@
       font-weight: 500;
       font-size: 20px;
       letter-spacing: -0.015em;
-      color: var(--fg);
       line-height: 1.25;
+      background: linear-gradient(180deg, #ffffff 0%, #ededee 30%, #a8a8ae 75%, #6a6a70 100%);
+      -webkit-background-clip: text;
+              background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
     }
     .feature h3 .accent {
       color: var(--accent);
+      -webkit-text-fill-color: var(--accent);
+      background: none;
     }
     .feature p {
       font-size: 14.5px;
@@ -989,11 +1076,58 @@
     </div>
   </section>
 
+  <!-- KINETIC MARQUEE BREAK -->
+  <section class="kv-break" aria-hidden="true">
+    <div class="kv-marquee">
+      <div class="kv-marquee__track">
+        <span class="kv-marquee__item">Browse.</span>
+        <span class="kv-marquee__item kv-marquee__item--star">✦</span>
+        <span class="kv-marquee__item kv-marquee__item--italic">Script.</span>
+        <span class="kv-marquee__item kv-marquee__item--star">✦</span>
+        <span class="kv-marquee__item kv-marquee__item--outline">Sync.</span>
+        <span class="kv-marquee__item kv-marquee__item--star">✦</span>
+        <span class="kv-marquee__item">Edit.</span>
+        <span class="kv-marquee__item kv-marquee__item--star">✦</span>
+        <span class="kv-marquee__item kv-marquee__item--italic">Search.</span>
+        <span class="kv-marquee__item kv-marquee__item--star">✦</span>
+
+        <span class="kv-marquee__item">Browse.</span>
+        <span class="kv-marquee__item kv-marquee__item--star">✦</span>
+        <span class="kv-marquee__item kv-marquee__item--italic">Script.</span>
+        <span class="kv-marquee__item kv-marquee__item--star">✦</span>
+        <span class="kv-marquee__item kv-marquee__item--outline">Sync.</span>
+        <span class="kv-marquee__item kv-marquee__item--star">✦</span>
+        <span class="kv-marquee__item">Edit.</span>
+        <span class="kv-marquee__item kv-marquee__item--star">✦</span>
+        <span class="kv-marquee__item kv-marquee__item--italic">Search.</span>
+        <span class="kv-marquee__item kv-marquee__item--star">✦</span>
+      </div>
+    </div>
+
+    <div class="kv-marquee">
+      <div class="kv-marquee__track kv-marquee__track--reverse">
+        <span class="kv-marquee__item kv-marquee__item--outline">Cloudflare KV</span>
+        <span class="kv-marquee__item kv-marquee__item--star">✦</span>
+        <span class="kv-marquee__item">without the dashboard</span>
+        <span class="kv-marquee__item kv-marquee__item--star">✦</span>
+        <span class="kv-marquee__item kv-marquee__item--italic">friction.</span>
+        <span class="kv-marquee__item kv-marquee__item--star">✦</span>
+
+        <span class="kv-marquee__item kv-marquee__item--outline">Cloudflare KV</span>
+        <span class="kv-marquee__item kv-marquee__item--star">✦</span>
+        <span class="kv-marquee__item">without the dashboard</span>
+        <span class="kv-marquee__item kv-marquee__item--star">✦</span>
+        <span class="kv-marquee__item kv-marquee__item--italic">friction.</span>
+        <span class="kv-marquee__item kv-marquee__item--star">✦</span>
+      </div>
+    </div>
+  </section>
+
   <!-- THEMES -->
   <section id="themes" class="themes">
     <div class="section-header">
       <div class="eyebrow">Appearance</div>
-      <h2>Ten themes. <span class="accent">One</span> aesthetic.</h2>
+      <h2>Many themes. <span class="accent">One</span> aesthetic.</h2>
       <p>Applied consistently across the UI and the code editor — pick yours from Settings.</p>
     </div>
 
@@ -1017,6 +1151,26 @@
       <a class="theme-card" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-nord.png" target="_blank" rel="noopener">
         <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-nord.png" alt="Nord theme" />
         <div class="label">nord</div>
+      </a>
+      <a class="theme-card" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-catppuccin-latte.png" target="_blank" rel="noopener">
+        <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-catppuccin-latte.png" alt="Catppuccin Latte theme" />
+        <div class="label">catppuccin-latte</div>
+      </a>
+      <a class="theme-card" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-github-light.png" target="_blank" rel="noopener">
+        <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-github-light.png" alt="GitHub Light theme" />
+        <div class="label">github-light</div>
+      </a>
+      <a class="theme-card" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-one-light.png" target="_blank" rel="noopener">
+        <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-one-light.png" alt="One Light theme" />
+        <div class="label">one-light</div>
+      </a>
+      <a class="theme-card" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-quiet-light.png" target="_blank" rel="noopener">
+        <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-quiet-light.png" alt="Quiet Light theme" />
+        <div class="label">quiet-light</div>
+      </a>
+      <a class="theme-card" href="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-solarized-light.png" target="_blank" rel="noopener">
+        <img src="https://raw.githubusercontent.com/uditalias/kvault/main/public/screenshots/theme-solarized-light.png" alt="Solarized Light theme" />
+        <div class="label">solarized-light</div>
       </a>
     </div>
   </section>
