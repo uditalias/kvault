@@ -40,7 +40,7 @@ export default function UpdatePopover({ open, onClose, anchorRef }: Props) {
       ref={ref}
       role="dialog"
       aria-label="Update available"
-      className="absolute bottom-7 left-0 z-50 w-96 max-h-80 flex flex-col rounded-md border border-[var(--border)] bg-[var(--bg-secondary)] shadow-lg text-[length:var(--font-size-sm)]"
+      className="absolute bottom-7 right-0 z-50 w-96 max-h-80 flex flex-col rounded-md border border-[var(--border)] bg-[var(--bg-secondary)] shadow-lg text-[length:var(--font-size-sm)]"
     >
       <div className="px-3 py-2 border-b border-[var(--border)]">
         <div className="font-medium text-[var(--text-primary)]">
