@@ -1,3 +1,7 @@
+## 0.0.9 (2026-04-20)
+
+- feat(accounts): namespace filter/sort, copy namespace ID, and chrome selection polish (690c040)
+
 ## 0.0.8 (2026-04-19)
 
 - fix(playground): make Run work in production builds (afe2077)
